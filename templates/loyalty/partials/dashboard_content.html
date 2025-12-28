@@ -1,0 +1,208 @@
+{% load i18n %}
+
+<!-- OOB Tabbar Update -->
+<ion-footer hx-swap-oob="innerHTML:#section-tabbar">
+{% include "loyalty/partials/tabbar.html" with current_view='dashboard' %}
+</ion-footer>
+
+<ion-content class="ion-padding">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ config.program_name }}</h1>
+            <p class="text-gray-500">{% trans "Loyalty program overview and statistics" %}</p>
+        </div>
+        {% if not config.program_enabled %}
+        <ion-badge color="warning">{% trans "Program Disabled" %}</ion-badge>
+        {% endif %}
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <!-- Total Members -->
+        <ion-card>
+            <ion-card-content>
+                <div class="flex items-center gap-4">
+                    <div class="p-3 bg-blue-100 rounded-full">
+                        <ion-icon name="people" class="text-2xl text-blue-600"></ion-icon>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">{% trans "Total Members" %}</p>
+                        <p class="text-2xl font-bold">{{ total_members }}</p>
+                    </div>
+                </div>
+            </ion-card-content>
+        </ion-card>
+
+        <!-- Points in Circulation -->
+        <ion-card>
+            <ion-card-content>
+                <div class="flex items-center gap-4">
+                    <div class="p-3 bg-green-100 rounded-full">
+                        <ion-icon name="star" class="text-2xl text-green-600"></ion-icon>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">{% trans "Points in Circulation" %}</p>
+                        <p class="text-2xl font-bold">{{ points_in_circulation|default:0 }}</p>
+                    </div>
+                </div>
+            </ion-card-content>
+        </ion-card>
+
+        <!-- Points Redeemed -->
+        <ion-card>
+            <ion-card-content>
+                <div class="flex items-center gap-4">
+                    <div class="p-3 bg-purple-100 rounded-full">
+                        <ion-icon name="gift" class="text-2xl text-purple-600"></ion-icon>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">{% trans "Points Redeemed" %}</p>
+                        <p class="text-2xl font-bold">{{ total_points_redeemed|default:0 }}</p>
+                    </div>
+                </div>
+            </ion-card-content>
+        </ion-card>
+
+        <!-- Active Rewards -->
+        <ion-card>
+            <ion-card-content>
+                <div class="flex items-center gap-4">
+                    <div class="p-3 bg-amber-100 rounded-full">
+                        <ion-icon name="trophy" class="text-2xl text-amber-600"></ion-icon>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">{% trans "Active Rewards" %}</p>
+                        <p class="text-2xl font-bold">{{ active_rewards }}</p>
+                    </div>
+                </div>
+            </ion-card-content>
+        </ion-card>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Top Members -->
+        <ion-card class="lg:col-span-1">
+            <ion-card-header>
+                <ion-card-title>{% trans "Top Members" %}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+                <ion-list>
+                    {% for member in top_members %}
+                    <ion-item
+                        button
+                        hx-get="{% url 'loyalty:member_detail' pk=member.pk %}"
+                        hx-target="#dashboard-content"
+                        hx-push-url="true">
+                        <ion-avatar slot="start">
+                            <div class="w-full h-full flex items-center justify-center bg-blue-500 text-white font-bold">
+                                {{ member.name|slice:":1"|upper }}
+                            </div>
+                        </ion-avatar>
+                        <ion-label>
+                            <h3>{{ member.name }}</h3>
+                            <p>{{ member.lifetime_points }} {% trans "points" %}</p>
+                        </ion-label>
+                        {% if member.tier %}
+                        <ion-badge slot="end" style="--background: {{ member.tier.color }};">
+                            {{ member.tier.name }}
+                        </ion-badge>
+                        {% endif %}
+                    </ion-item>
+                    {% empty %}
+                    <ion-item>
+                        <ion-label class="text-gray-500">{% trans "No members yet" %}</ion-label>
+                    </ion-item>
+                    {% endfor %}
+                </ion-list>
+            </ion-card-content>
+        </ion-card>
+
+        <!-- Tier Distribution -->
+        <ion-card class="lg:col-span-1">
+            <ion-card-header>
+                <ion-card-title>{% trans "Tier Distribution" %}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+                <ion-list>
+                    {% for stat in tier_stats %}
+                    <ion-item>
+                        <div slot="start" class="w-4 h-4 rounded-full" style="background-color: {{ stat.tier__color|default:'#gray' }};"></div>
+                        <ion-label>{{ stat.tier__name|default:"No Tier" }}</ion-label>
+                        <ion-badge slot="end">{{ stat.count }}</ion-badge>
+                    </ion-item>
+                    {% empty %}
+                    <ion-item>
+                        <ion-label class="text-gray-500">{% trans "No data" %}</ion-label>
+                    </ion-item>
+                    {% endfor %}
+                </ion-list>
+            </ion-card-content>
+        </ion-card>
+
+        <!-- Recent Activity -->
+        <ion-card class="lg:col-span-1">
+            <ion-card-header>
+                <ion-card-title>{% trans "Recent Activity" %}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+                <ion-list>
+                    {% for tx in recent_transactions %}
+                    <ion-item>
+                        <ion-icon
+                            slot="start"
+                            name="{% if tx.points > 0 %}add-circle{% else %}remove-circle{% endif %}"
+                            class="{% if tx.points > 0 %}text-green-500{% else %}text-red-500{% endif %}">
+                        </ion-icon>
+                        <ion-label>
+                            <h3>{{ tx.member.name }}</h3>
+                            <p>{{ tx.description|default:tx.get_transaction_type_display }}</p>
+                        </ion-label>
+                        <ion-note slot="end" class="{% if tx.points > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if tx.points > 0 %}+{% endif %}{{ tx.points }}
+                        </ion-note>
+                    </ion-item>
+                    {% empty %}
+                    <ion-item>
+                        <ion-label class="text-gray-500">{% trans "No activity yet" %}</ion-label>
+                    </ion-item>
+                    {% endfor %}
+                </ion-list>
+            </ion-card-content>
+        </ion-card>
+    </div>
+
+    <!-- Quick Actions -->
+    <ion-card class="mt-6">
+        <ion-card-header>
+            <ion-card-title>{% trans "Quick Actions" %}</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+            <div class="flex flex-wrap gap-3">
+                <ion-button
+                    hx-get="{% url 'loyalty:member_create' %}"
+                    hx-target="#dashboard-content"
+                    hx-push-url="true">
+                    <ion-icon slot="start" name="person-add-outline"></ion-icon>
+                    {% trans "Add Member" %}
+                </ion-button>
+                <ion-button
+                    color="secondary"
+                    hx-get="{% url 'loyalty:reward_create' %}"
+                    hx-target="#dashboard-content"
+                    hx-push-url="true">
+                    <ion-icon slot="start" name="gift-outline"></ion-icon>
+                    {% trans "Create Reward" %}
+                </ion-button>
+                <ion-button
+                    color="tertiary"
+                    hx-get="{% url 'loyalty:tier_create' %}"
+                    hx-target="#dashboard-content"
+                    hx-push-url="true">
+                    <ion-icon slot="start" name="ribbon-outline"></ion-icon>
+                    {% trans "Add Tier" %}
+                </ion-button>
+            </div>
+        </ion-card-content>
+    </ion-card>
+</ion-content>

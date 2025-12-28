@@ -1,0 +1,117 @@
+{% load i18n %}
+
+<!-- OOB Tabbar Update -->
+<ion-footer hx-swap-oob="innerHTML:#section-tabbar">
+{% include "loyalty/partials/tabbar.html" with current_view='tiers' %}
+</ion-footer>
+
+<ion-content class="ion-padding">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">{% trans "Loyalty Tiers" %}</h1>
+            <p class="text-gray-500">{% trans "Configure membership levels and benefits" %}</p>
+        </div>
+        <ion-button
+            hx-get="{% url 'loyalty:tier_create' %}"
+            hx-target="#dashboard-content"
+            hx-push-url="true">
+            <ion-icon slot="start" name="add"></ion-icon>
+            {% trans "Add Tier" %}
+        </ion-button>
+    </div>
+
+    <!-- Tiers Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {% for tier in tiers %}
+        <ion-card class="{% if not tier.is_active %}opacity-50{% endif %}">
+            <ion-card-header style="background-color: {{ tier.color }}20;">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="p-3 rounded-full" style="background-color: {{ tier.color }};">
+                            <ion-icon name="{{ tier.icon }}" class="text-2xl text-white"></ion-icon>
+                        </div>
+                        <div>
+                            <ion-card-title style="color: {{ tier.color }};">{{ tier.name }}</ion-card-title>
+                            {% if tier.is_default %}
+                            <ion-badge color="primary" class="mt-1">{% trans "Default" %}</ion-badge>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if not tier.is_active %}
+                    <ion-badge color="medium">{% trans "Inactive" %}</ion-badge>
+                    {% endif %}
+                </div>
+            </ion-card-header>
+            <ion-card-content>
+                <ion-list lines="none">
+                    <ion-item>
+                        <ion-icon slot="start" name="trophy-outline" class="text-gray-400"></ion-icon>
+                        <ion-label class="text-sm">{% trans "Min Points" %}</ion-label>
+                        <ion-note slot="end">{{ tier.min_points }}</ion-note>
+                    </ion-item>
+                    <ion-item>
+                        <ion-icon slot="start" name="cash-outline" class="text-gray-400"></ion-icon>
+                        <ion-label class="text-sm">{% trans "Min Spent" %}</ion-label>
+                        <ion-note slot="end">{{ tier.min_spent }}€</ion-note>
+                    </ion-item>
+                    <ion-item>
+                        <ion-icon slot="start" name="star-outline" class="text-gray-400"></ion-icon>
+                        <ion-label class="text-sm">{% trans "Multiplier" %}</ion-label>
+                        <ion-note slot="end">{{ tier.points_multiplier }}x</ion-note>
+                    </ion-item>
+                    {% if tier.discount_percent > 0 %}
+                    <ion-item>
+                        <ion-icon slot="start" name="pricetag-outline" class="text-gray-400"></ion-icon>
+                        <ion-label class="text-sm">{% trans "Discount" %}</ion-label>
+                        <ion-note slot="end">{{ tier.discount_percent }}%</ion-note>
+                    </ion-item>
+                    {% endif %}
+                    <ion-item>
+                        <ion-icon slot="start" name="people-outline" class="text-gray-400"></ion-icon>
+                        <ion-label class="text-sm">{% trans "Members" %}</ion-label>
+                        <ion-note slot="end">{{ tier.member_count|default:0 }}</ion-note>
+                    </ion-item>
+                </ion-list>
+
+                <div class="flex gap-2 mt-4">
+                    <ion-button
+                        expand="block"
+                        fill="outline"
+                        size="small"
+                        hx-get="{% url 'loyalty:tier_edit' pk=tier.pk %}"
+                        hx-target="#dashboard-content"
+                        hx-push-url="true"
+                        class="flex-1">
+                        <ion-icon slot="start" name="create-outline"></ion-icon>
+                        {% trans "Edit" %}
+                    </ion-button>
+                    {% if tier.member_count == 0 %}
+                    <ion-button
+                        fill="outline"
+                        size="small"
+                        color="danger"
+                        hx-post="{% url 'loyalty:tier_delete' pk=tier.pk %}"
+                        hx-target="#dashboard-content"
+                        hx-confirm="{% trans 'Delete this tier?' %}">
+                        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                    </ion-button>
+                    {% endif %}
+                </div>
+            </ion-card-content>
+        </ion-card>
+        {% empty %}
+        <div class="col-span-full text-center py-8">
+            <ion-icon name="ribbon-outline" class="text-6xl text-gray-300 mb-4"></ion-icon>
+            <p class="text-gray-500">{% trans "No tiers configured" %}</p>
+            <ion-button
+                class="mt-4"
+                hx-get="{% url 'loyalty:tier_create' %}"
+                hx-target="#dashboard-content"
+                hx-push-url="true">
+                {% trans "Create First Tier" %}
+            </ion-button>
+        </div>
+        {% endfor %}
+    </div>
+</ion-content>

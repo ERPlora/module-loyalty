@@ -1,0 +1,195 @@
+{% load i18n %}
+
+<!-- OOB Tabbar Update -->
+<ion-footer hx-swap-oob="innerHTML:#section-tabbar">
+{% include "loyalty/partials/tabbar.html" with current_view='settings' %}
+</ion-footer>
+
+<ion-content class="ion-padding">
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">{% trans "Loyalty Program Settings" %}</h1>
+        <p class="text-gray-500">{% trans "Configure your loyalty program" %}</p>
+    </div>
+
+    <form
+        method="post"
+        hx-post="{% url 'loyalty:settings' %}"
+        hx-target="#dashboard-content">
+        {% csrf_token %}
+
+        <!-- Program Settings -->
+        <ion-card class="mb-4">
+            <ion-card-header>
+                <ion-card-title>{% trans "Program Settings" %}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Program Name" %}</ion-label>
+                        <ion-input
+                            name="program_name"
+                            value="{{ config.program_name }}"
+                            class="mt-1">
+                        </ion-input>
+                    </div>
+                    <div class="flex items-center">
+                        <ion-item lines="none" class="w-full">
+                            <ion-checkbox
+                                name="program_enabled"
+                                slot="start"
+                                {% if config.program_enabled %}checked{% endif %}>
+                            </ion-checkbox>
+                            <ion-label>{% trans "Program Enabled" %}</ion-label>
+                        </ion-item>
+                    </div>
+                </div>
+            </ion-card-content>
+        </ion-card>
+
+        <!-- Points Configuration -->
+        <ion-card class="mb-4">
+            <ion-card-header>
+                <ion-card-title>{% trans "Points Configuration" %}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Points per €1" %}</ion-label>
+                        <ion-input
+                            name="points_per_currency"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value="{{ config.points_per_currency }}"
+                            class="mt-1">
+                        </ion-input>
+                        <p class="text-xs text-gray-500 mt-1">{% trans "Points earned per currency unit spent" %}</p>
+                    </div>
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Point Value (€)" %}</ion-label>
+                        <ion-input
+                            name="points_value"
+                            type="number"
+                            min="0"
+                            step="0.0001"
+                            value="{{ config.points_value }}"
+                            class="mt-1">
+                        </ion-input>
+                        <p class="text-xs text-gray-500 mt-1">{% trans "Value of each point when redeemed" %}</p>
+                    </div>
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Minimum Points for Redemption" %}</ion-label>
+                        <ion-input
+                            name="minimum_redemption"
+                            type="number"
+                            min="0"
+                            value="{{ config.minimum_redemption }}"
+                            class="mt-1">
+                        </ion-input>
+                    </div>
+                </div>
+            </ion-card-content>
+        </ion-card>
+
+        <!-- Expiry Settings -->
+        <ion-card class="mb-4">
+            <ion-card-header>
+                <ion-card-title>{% trans "Points Expiry" %}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex items-center">
+                        <ion-item lines="none" class="w-full">
+                            <ion-checkbox
+                                name="points_expire"
+                                slot="start"
+                                {% if config.points_expire %}checked{% endif %}>
+                            </ion-checkbox>
+                            <ion-label>{% trans "Points Expire" %}</ion-label>
+                        </ion-item>
+                    </div>
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Expiry Period (Months)" %}</ion-label>
+                        <ion-input
+                            name="expiry_months"
+                            type="number"
+                            min="1"
+                            value="{{ config.expiry_months }}"
+                            class="mt-1">
+                        </ion-input>
+                    </div>
+                </div>
+            </ion-card-content>
+        </ion-card>
+
+        <!-- Enrollment Settings -->
+        <ion-card class="mb-4">
+            <ion-card-header>
+                <ion-card-title>{% trans "Enrollment" %}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex items-center">
+                        <ion-item lines="none" class="w-full">
+                            <ion-checkbox
+                                name="auto_enroll"
+                                slot="start"
+                                {% if config.auto_enroll %}checked{% endif %}>
+                            </ion-checkbox>
+                            <ion-label>
+                                <h3>{% trans "Auto-Enroll Customers" %}</h3>
+                                <p>{% trans "Automatically enroll on first purchase" %}</p>
+                            </ion-label>
+                        </ion-item>
+                    </div>
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Welcome Points" %}</ion-label>
+                        <ion-input
+                            name="welcome_points"
+                            type="number"
+                            min="0"
+                            value="{{ config.welcome_points }}"
+                            class="mt-1">
+                        </ion-input>
+                        <p class="text-xs text-gray-500 mt-1">{% trans "Bonus points given on enrollment" %}</p>
+                    </div>
+                </div>
+            </ion-card-content>
+        </ion-card>
+
+        <!-- Display Settings -->
+        <ion-card class="mb-4">
+            <ion-card-header>
+                <ion-card-title>{% trans "Display Options" %}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+                <div class="flex flex-wrap gap-4">
+                    <ion-item lines="none">
+                        <ion-checkbox
+                            name="show_points_on_receipt"
+                            slot="start"
+                            {% if config.show_points_on_receipt %}checked{% endif %}>
+                        </ion-checkbox>
+                        <ion-label>{% trans "Show Points on Receipt" %}</ion-label>
+                    </ion-item>
+                    <ion-item lines="none">
+                        <ion-checkbox
+                            name="show_available_rewards"
+                            slot="start"
+                            {% if config.show_available_rewards %}checked{% endif %}>
+                        </ion-checkbox>
+                        <ion-label>{% trans "Show Available Rewards at Checkout" %}</ion-label>
+                    </ion-item>
+                </div>
+            </ion-card-content>
+        </ion-card>
+
+        <div class="flex justify-end">
+            <ion-button type="submit">
+                <ion-icon slot="start" name="checkmark"></ion-icon>
+                {% trans "Save Settings" %}
+            </ion-button>
+        </div>
+    </form>
+</ion-content>

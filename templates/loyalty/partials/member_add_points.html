@@ -1,0 +1,83 @@
+{% load i18n %}
+
+<!-- OOB Tabbar Update -->
+<ion-footer hx-swap-oob="innerHTML:#section-tabbar">
+{% include "loyalty/partials/tabbar.html" with current_view='members' %}
+</ion-footer>
+
+<ion-content class="ion-padding">
+    <!-- Header -->
+    <div class="flex items-center gap-4 mb-6">
+        <ion-button
+            fill="clear"
+            hx-get="{% url 'loyalty:member_detail' pk=member.pk %}"
+            hx-target="#dashboard-content"
+            hx-push-url="true">
+            <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+        </ion-button>
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">{% trans "Add Bonus Points" %}</h1>
+            <p class="text-gray-500">{{ member.name }} ({{ member.member_number }})</p>
+        </div>
+    </div>
+
+    <div class="max-w-lg mx-auto">
+        <ion-card>
+            <ion-card-content>
+                <!-- Current Balance -->
+                <div class="text-center mb-6 p-4 bg-blue-50 rounded-lg">
+                    <p class="text-sm text-gray-500">{% trans "Current Balance" %}</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ member.points_balance }} {% trans "points" %}</p>
+                </div>
+
+                <form
+                    method="post"
+                    hx-post="{% url 'loyalty:member_add_points' pk=member.pk %}"
+                    hx-target="#dashboard-content">
+                    {% csrf_token %}
+
+                    <div class="space-y-4">
+                        <!-- Points -->
+                        <div>
+                            <ion-label class="text-sm text-gray-600">{% trans "Points to Add" %} *</ion-label>
+                            <ion-input
+                                name="points"
+                                type="number"
+                                min="1"
+                                required
+                                placeholder="{% trans 'Enter points amount' %}"
+                                class="mt-1">
+                            </ion-input>
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            <ion-label class="text-sm text-gray-600">{% trans "Reason/Description" %}</ion-label>
+                            <ion-textarea
+                                name="description"
+                                rows="2"
+                                placeholder="{% trans 'e.g., Birthday bonus, Special promotion' %}"
+                                class="mt-1">
+                            </ion-textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-3 mt-6">
+                        <ion-button
+                            fill="outline"
+                            color="medium"
+                            hx-get="{% url 'loyalty:member_detail' pk=member.pk %}"
+                            hx-target="#dashboard-content"
+                            hx-push-url="true">
+                            {% trans "Cancel" %}
+                        </ion-button>
+                        <ion-button type="submit" color="success">
+                            <ion-icon slot="start" name="add"></ion-icon>
+                            {% trans "Add Points" %}
+                        </ion-button>
+                    </div>
+                </form>
+            </ion-card-content>
+        </ion-card>
+    </div>
+</ion-content>

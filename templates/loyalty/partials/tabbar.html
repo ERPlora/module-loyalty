@@ -1,0 +1,52 @@
+{% load i18n %}
+
+<ion-tab-bar>
+    <ion-tab-button
+        hx-get="{% url 'loyalty:dashboard' %}"
+        hx-target="#dashboard-content"
+        hx-push-url="true"
+        class="{% if current_view == 'dashboard' %}tab-selected{% endif %}">
+        <ion-icon name="grid-outline"></ion-icon>
+        <ion-label>{% trans "Overview" %}</ion-label>
+    </ion-tab-button>
+    <ion-tab-button
+        hx-get="{% url 'loyalty:members_list' %}"
+        hx-target="#dashboard-content"
+        hx-push-url="true"
+        class="{% if current_view == 'members' %}tab-selected{% endif %}">
+        <ion-icon name="people-outline"></ion-icon>
+        <ion-label>{% trans "Members" %}</ion-label>
+    </ion-tab-button>
+    <ion-tab-button
+        hx-get="{% url 'loyalty:rewards_list' %}"
+        hx-target="#dashboard-content"
+        hx-push-url="true"
+        class="{% if current_view == 'rewards' %}tab-selected{% endif %}">
+        <ion-icon name="gift-outline"></ion-icon>
+        <ion-label>{% trans "Rewards" %}</ion-label>
+    </ion-tab-button>
+    <ion-tab-button
+        hx-get="{% url 'loyalty:tiers_list' %}"
+        hx-target="#dashboard-content"
+        hx-push-url="true"
+        class="{% if current_view == 'tiers' %}tab-selected{% endif %}">
+        <ion-icon name="ribbon-outline"></ion-icon>
+        <ion-label>{% trans "Tiers" %}</ion-label>
+    </ion-tab-button>
+    <ion-tab-button
+        hx-get="{% url 'loyalty:transactions_list' %}"
+        hx-target="#dashboard-content"
+        hx-push-url="true"
+        class="{% if current_view == 'transactions' %}tab-selected{% endif %}">
+        <ion-icon name="list-outline"></ion-icon>
+        <ion-label>{% trans "History" %}</ion-label>
+    </ion-tab-button>
+    <ion-tab-button
+        hx-get="{% url 'loyalty:settings' %}"
+        hx-target="#dashboard-content"
+        hx-push-url="true"
+        class="{% if current_view == 'settings' %}tab-selected{% endif %}">
+        <ion-icon name="settings-outline"></ion-icon>
+        <ion-label>{% trans "Settings" %}</ion-label>
+    </ion-tab-button>
+</ion-tab-bar>

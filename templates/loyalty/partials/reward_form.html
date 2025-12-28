@@ -1,0 +1,253 @@
+{% load i18n %}
+
+<!-- OOB Tabbar Update -->
+<ion-footer hx-swap-oob="innerHTML:#section-tabbar">
+{% include "loyalty/partials/tabbar.html" with current_view='rewards' %}
+</ion-footer>
+
+<ion-content class="ion-padding">
+    <!-- Header -->
+    <div class="flex items-center gap-4 mb-6">
+        <ion-button
+            fill="clear"
+            hx-get="{% url 'loyalty:rewards_list' %}"
+            hx-target="#dashboard-content"
+            hx-push-url="true">
+            <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+        </ion-button>
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">
+                {% if is_create %}{% trans "Add Reward" %}{% else %}{% trans "Edit Reward" %}{% endif %}
+            </h1>
+        </div>
+    </div>
+
+    <ion-card>
+        <ion-card-content>
+            <form
+                method="post"
+                enctype="multipart/form-data"
+                hx-post="{% if is_create %}{% url 'loyalty:reward_create' %}{% else %}{% url 'loyalty:reward_edit' pk=reward.pk %}{% endif %}"
+                hx-target="#dashboard-content"
+                hx-encoding="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Name -->
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Name" %} *</ion-label>
+                        <ion-input
+                            name="name"
+                            value="{% if is_create %}{{ form_data.name|default:'' }}{% else %}{{ reward.name }}{% endif %}"
+                            required
+                            class="mt-1">
+                        </ion-input>
+                    </div>
+
+                    <!-- Name ES -->
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Name (Spanish)" %}</ion-label>
+                        <ion-input
+                            name="name_es"
+                            value="{% if is_create %}{{ form_data.name_es|default:'' }}{% else %}{{ reward.name_es }}{% endif %}"
+                            class="mt-1">
+                        </ion-input>
+                    </div>
+
+                    <!-- Points Cost -->
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Points Cost" %} *</ion-label>
+                        <ion-input
+                            name="points_cost"
+                            type="number"
+                            min="1"
+                            value="{% if is_create %}{{ form_data.points_cost|default:100 }}{% else %}{{ reward.points_cost }}{% endif %}"
+                            required
+                            class="mt-1">
+                        </ion-input>
+                    </div>
+
+                    <!-- Reward Type -->
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Reward Type" %}</ion-label>
+                        <ion-select
+                            name="reward_type"
+                            value="{% if is_create %}{{ form_data.reward_type|default:'discount_amount' }}{% else %}{{ reward.reward_type }}{% endif %}"
+                            interface="popover"
+                            class="mt-1">
+                            {% for value, label in reward_types %}
+                            <ion-select-option value="{{ value }}">{{ label }}</ion-select-option>
+                            {% endfor %}
+                        </ion-select>
+                    </div>
+
+                    <!-- Value -->
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Value" %}</ion-label>
+                        <ion-input
+                            name="value"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value="{% if is_create %}{{ form_data.value|default:'0' }}{% else %}{{ reward.value }}{% endif %}"
+                            class="mt-1">
+                        </ion-input>
+                        <p class="text-xs text-gray-500 mt-1">{% trans "% or € depending on type" %}</p>
+                    </div>
+
+                    <!-- Icon -->
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Icon" %}</ion-label>
+                        <ion-select
+                            name="icon"
+                            value="{% if is_create %}{{ form_data.icon|default:'gift-outline' }}{% else %}{{ reward.icon }}{% endif %}"
+                            interface="popover"
+                            class="mt-1">
+                            <ion-select-option value="gift-outline">Gift</ion-select-option>
+                            <ion-select-option value="pricetag-outline">Pricetag</ion-select-option>
+                            <ion-select-option value="card-outline">Card</ion-select-option>
+                            <ion-select-option value="cash-outline">Cash</ion-select-option>
+                            <ion-select-option value="star-outline">Star</ion-select-option>
+                            <ion-select-option value="heart-outline">Heart</ion-select-option>
+                        </ion-select>
+                    </div>
+
+                    <!-- Product (for free product type) -->
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Product ID" %}</ion-label>
+                        <ion-input
+                            name="product_id"
+                            type="number"
+                            value="{% if is_create %}{{ form_data.product_id|default:'' }}{% else %}{{ reward.product_id|default:'' }}{% endif %}"
+                            placeholder="{% trans 'For free product rewards' %}"
+                            class="mt-1">
+                        </ion-input>
+                    </div>
+
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Product Name" %}</ion-label>
+                        <ion-input
+                            name="product_name"
+                            value="{% if is_create %}{{ form_data.product_name|default:'' }}{% else %}{{ reward.product_name }}{% endif %}"
+                            class="mt-1">
+                        </ion-input>
+                    </div>
+
+                    <!-- Min Tier -->
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Minimum Tier Required" %}</ion-label>
+                        <ion-select
+                            name="min_tier"
+                            value="{% if is_create %}{{ form_data.min_tier|default:'' }}{% else %}{{ reward.min_tier_id|default:'' }}{% endif %}"
+                            interface="popover"
+                            class="mt-1">
+                            <ion-select-option value="">{% trans "Any Tier" %}</ion-select-option>
+                            {% for tier in tiers %}
+                            <ion-select-option value="{{ tier.pk }}">{{ tier.name }}</ion-select-option>
+                            {% endfor %}
+                        </ion-select>
+                    </div>
+
+                    <!-- Max Redemptions -->
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Max Total Redemptions" %}</ion-label>
+                        <ion-input
+                            name="max_redemptions"
+                            type="number"
+                            min="0"
+                            value="{% if is_create %}{{ form_data.max_redemptions|default:'' }}{% else %}{{ reward.max_redemptions|default:'' }}{% endif %}"
+                            placeholder="{% trans 'Unlimited' %}"
+                            class="mt-1">
+                        </ion-input>
+                    </div>
+
+                    <!-- Max Per Member -->
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Max Per Member" %}</ion-label>
+                        <ion-input
+                            name="max_per_member"
+                            type="number"
+                            min="1"
+                            value="{% if is_create %}{{ form_data.max_per_member|default:1 }}{% else %}{{ reward.max_per_member }}{% endif %}"
+                            class="mt-1">
+                        </ion-input>
+                    </div>
+
+                    <!-- Order -->
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Display Order" %}</ion-label>
+                        <ion-input
+                            name="order"
+                            type="number"
+                            min="0"
+                            value="{% if is_create %}{{ form_data.order|default:0 }}{% else %}{{ reward.order }}{% endif %}"
+                            class="mt-1">
+                        </ion-input>
+                    </div>
+
+                    <!-- Image -->
+                    <div>
+                        <ion-label class="text-sm text-gray-600">{% trans "Image" %}</ion-label>
+                        <input
+                            type="file"
+                            name="image"
+                            accept="image/*"
+                            class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        {% if reward.image %}
+                        <p class="text-xs text-gray-500 mt-1">{% trans "Current" %}: {{ reward.image.name }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Description -->
+                    <div class="md:col-span-2">
+                        <ion-label class="text-sm text-gray-600">{% trans "Description" %}</ion-label>
+                        <ion-textarea
+                            name="description"
+                            rows="2"
+                            class="mt-1">{% if is_create %}{{ form_data.description|default:'' }}{% else %}{{ reward.description }}{% endif %}</ion-textarea>
+                    </div>
+
+                    <!-- Options -->
+                    <div class="md:col-span-2">
+                        <ion-label class="text-sm text-gray-600 mb-2 block">{% trans "Options" %}</ion-label>
+                        <div class="flex flex-wrap gap-4">
+                            <ion-item lines="none">
+                                <ion-checkbox
+                                    name="is_featured"
+                                    slot="start"
+                                    {% if is_create %}{% if form_data.is_featured %}checked{% endif %}{% elif reward.is_featured %}checked{% endif %}>
+                                </ion-checkbox>
+                                <ion-label>{% trans "Featured" %}</ion-label>
+                            </ion-item>
+                            {% if not is_create %}
+                            <ion-item lines="none">
+                                <ion-checkbox
+                                    name="is_active"
+                                    slot="start"
+                                    {% if reward.is_active %}checked{% endif %}>
+                                </ion-checkbox>
+                                <ion-label>{% trans "Active" %}</ion-label>
+                            </ion-item>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6">
+                    <ion-button
+                        fill="outline"
+                        color="medium"
+                        hx-get="{% url 'loyalty:rewards_list' %}"
+                        hx-target="#dashboard-content"
+                        hx-push-url="true">
+                        {% trans "Cancel" %}
+                    </ion-button>
+                    <ion-button type="submit">
+                        <ion-icon slot="start" name="checkmark"></ion-icon>
+                        {% if is_create %}{% trans "Create Reward" %}{% else %}{% trans "Save Changes" %}{% endif %}
+                    </ion-button>
+                </div>
+            </form>
+        </ion-card-content>
+    </ion-card>
+</ion-content>

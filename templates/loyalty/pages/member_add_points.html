@@ -1,0 +1,21 @@
+{% extends "dashboard/layout.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block page_title %}{% trans "Add Points" %}{% endblock %}
+
+{% block content %}
+{% with current_section="loyalty" section_title=_("Loyalty") %}
+{{ block.super }}
+{% endwith %}
+{% endblock %}
+
+{% block section_tabbar %}
+<ion-footer>
+{% include "loyalty/partials/tabbar.html" with current_view='members' %}
+</ion-footer>
+{% endblock %}
+
+{% block dashboard_content %}
+{% include "loyalty/partials/member_add_points.html" %}
+{% endblock %}

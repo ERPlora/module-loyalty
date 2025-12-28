@@ -1,0 +1,163 @@
+{
+  "module_id": "loyalty",
+  "name": "Loyalty Program",
+  "name_es": "Programa de Fidelización",
+  "version": "1.0.0",
+  "description": "Customer loyalty program with points accumulation, tiers, and redeemable rewards",
+  "description_es": "Programa de fidelización de clientes con acumulación de puntos, niveles y recompensas canjeables",
+  "author": "ERPlora",
+  "author_email": "support@erplora.com",
+  "license": "MIT",
+  "category": "crm",
+  "industries": [
+    "retail",
+    "ecommerce",
+    "restaurant",
+    "bar",
+    "cafe",
+    "hotel",
+    "salon",
+    "fitness"
+  ],
+  "tags": [
+    "loyalty",
+    "points",
+    "rewards",
+    "tiers",
+    "customers",
+    "retention"
+  ],
+  "icon": "heart-outline",
+  "homepage": "https://github.com/ERPlora/module-loyalty",
+  "repository_url": "https://github.com/ERPlora/module-loyalty",
+  "documentation": "https://docs.erplora.com/modules/loyalty",
+  "dependencies": {
+    "python": [],
+    "modules": []
+  },
+  "compatibility": {
+    "min_erplora_version": "1.0.0",
+    "max_erplora_version": "2.0.0"
+  },
+  "features": {
+    "i18n": true,
+    "languages": [
+      "en",
+      "es"
+    ],
+    "api": true,
+    "webhooks": false,
+    "background_tasks": false,
+    "supports_images": true,
+    "supports_export": true,
+    "supports_import": false
+  },
+  "permissions": [
+    "loyalty.view_loyaltymember",
+    "loyalty.add_loyaltymember",
+    "loyalty.change_loyaltymember",
+    "loyalty.delete_loyaltymember",
+    "loyalty.view_loyaltytier",
+    "loyalty.add_loyaltytier",
+    "loyalty.change_loyaltytier",
+    "loyalty.delete_loyaltytier",
+    "loyalty.view_reward",
+    "loyalty.add_reward",
+    "loyalty.change_reward",
+    "loyalty.delete_reward",
+    "loyalty.view_pointstransaction",
+    "loyalty.redeem_points"
+  ],
+  "menu": {
+    "label": "Loyalty",
+    "label_es": "Fidelización",
+    "icon": "heart-outline",
+    "url": "/modules/loyalty/",
+    "order": 45
+  },
+  "settings": {
+    "program_enabled": {
+      "type": "boolean",
+      "default": true,
+      "label": "Program Enabled",
+      "label_es": "Programa Activo",
+      "description": "Enable or disable the loyalty program",
+      "description_es": "Activar o desactivar el programa de fidelización"
+    },
+    "points_per_currency": {
+      "type": "number",
+      "default": 1.0,
+      "label": "Points per Currency Unit",
+      "label_es": "Puntos por Unidad Monetaria",
+      "description": "Points earned per currency unit spent",
+      "description_es": "Puntos ganados por unidad monetaria gastada"
+    },
+    "auto_enroll": {
+      "type": "boolean",
+      "default": true,
+      "label": "Auto-Enroll Customers",
+      "label_es": "Inscripción Automática",
+      "description": "Automatically enroll customers on first purchase",
+      "description_es": "Inscribir automáticamente a clientes en su primera compra"
+    }
+  },
+  "api_endpoints": [
+    {
+      "path": "/api/members/",
+      "method": "GET",
+      "description": "List loyalty members"
+    },
+    {
+      "path": "/api/members/search/",
+      "method": "GET",
+      "description": "Search members by card/phone"
+    },
+    {
+      "path": "/api/members/<id>/points/",
+      "method": "POST",
+      "description": "Add/redeem points"
+    },
+    {
+      "path": "/api/rewards/",
+      "method": "GET",
+      "description": "List available rewards"
+    },
+    {
+      "path": "/api/redeem/",
+      "method": "POST",
+      "description": "Redeem a reward"
+    }
+  ],
+  "database": {
+    "migrations": true,
+    "models": [
+      "LoyaltyConfig",
+      "LoyaltyTier",
+      "LoyaltyMember",
+      "PointsTransaction",
+      "Reward",
+      "RewardRedemption"
+    ]
+  },
+  "static_files": {
+    "css": [],
+    "js": []
+  },
+  "media_uploads": {
+    "rewards": "loyalty/rewards/"
+  },
+  "changelog": {
+    "1.0.0": {
+      "date": "2025-12-27",
+      "changes": [
+        "Initial release",
+        "Member enrollment and management",
+        "Points earning and redemption",
+        "Tier system with automatic upgrades",
+        "Reward catalog management",
+        "Transaction history tracking",
+        "Multi-language support (English/Spanish)"
+      ]
+    }
+  }
+}
