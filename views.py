@@ -14,7 +14,7 @@ from django.utils.translation import gettext_lazy as _
 from decimal import Decimal
 import csv
 
-from apps.core.decorators import htmx_view
+from apps.core.htmx import htmx_view
 
 from .models import (
     LoyaltyConfig,
@@ -31,8 +31,8 @@ from .models import (
 # =============================================================================
 
 @htmx_view(
-    page_template='loyalty/pages/index.html',
-    partial_template='loyalty/partials/dashboard_content.html'
+    'loyalty/pages/index.html',
+    'loyalty/partials/dashboard_content.html'
 )
 def dashboard(request):
     """Loyalty program dashboard with statistics."""
@@ -84,8 +84,8 @@ def dashboard(request):
 # =============================================================================
 
 @htmx_view(
-    page_template='loyalty/pages/members.html',
-    partial_template='loyalty/partials/members_list.html'
+    'loyalty/pages/members.html',
+    'loyalty/partials/members_list.html'
 )
 def members_list(request):
     """List loyalty members with search and pagination."""
@@ -135,8 +135,8 @@ def members_list(request):
 
 
 @htmx_view(
-    page_template='loyalty/pages/member_form.html',
-    partial_template='loyalty/partials/member_form.html'
+    'loyalty/pages/member_form.html',
+    'loyalty/partials/member_form.html'
 )
 def member_create(request):
     """Create a new loyalty member."""
@@ -188,8 +188,8 @@ def member_create(request):
 
 
 @htmx_view(
-    page_template='loyalty/pages/member_detail.html',
-    partial_template='loyalty/partials/member_detail.html'
+    'loyalty/pages/member_detail.html',
+    'loyalty/partials/member_detail.html'
 )
 def member_detail(request, pk):
     """View member details and transaction history."""
@@ -223,8 +223,8 @@ def member_detail(request, pk):
 
 
 @htmx_view(
-    page_template='loyalty/pages/member_form.html',
-    partial_template='loyalty/partials/member_form.html'
+    'loyalty/pages/member_form.html',
+    'loyalty/partials/member_form.html'
 )
 def member_edit(request, pk):
     """Edit loyalty member."""
@@ -274,8 +274,8 @@ def member_delete(request, pk):
 
 
 @htmx_view(
-    page_template='loyalty/pages/member_add_points.html',
-    partial_template='loyalty/partials/member_add_points.html'
+    'loyalty/pages/member_add_points.html',
+    'loyalty/partials/member_add_points.html'
 )
 def member_add_points(request, pk):
     """Manually add bonus points to a member."""
@@ -302,8 +302,8 @@ def member_add_points(request, pk):
 
 
 @htmx_view(
-    page_template='loyalty/pages/member_redeem.html',
-    partial_template='loyalty/partials/member_redeem.html'
+    'loyalty/pages/member_redeem.html',
+    'loyalty/partials/member_redeem.html'
 )
 def member_redeem(request, pk):
     """Redeem a reward for a member."""
@@ -391,8 +391,8 @@ def export_members_csv(request):
 # =============================================================================
 
 @htmx_view(
-    page_template='loyalty/pages/tiers.html',
-    partial_template='loyalty/partials/tiers_list.html'
+    'loyalty/pages/tiers.html',
+    'loyalty/partials/tiers_list.html'
 )
 def tiers_list(request):
     """List loyalty tiers."""
@@ -404,8 +404,8 @@ def tiers_list(request):
 
 
 @htmx_view(
-    page_template='loyalty/pages/tier_form.html',
-    partial_template='loyalty/partials/tier_form.html'
+    'loyalty/pages/tier_form.html',
+    'loyalty/partials/tier_form.html'
 )
 def tier_create(request):
     """Create a new tier."""
@@ -451,8 +451,8 @@ def tier_create(request):
 
 
 @htmx_view(
-    page_template='loyalty/pages/tier_form.html',
-    partial_template='loyalty/partials/tier_form.html'
+    'loyalty/pages/tier_form.html',
+    'loyalty/partials/tier_form.html'
 )
 def tier_edit(request, pk):
     """Edit a tier."""
@@ -506,8 +506,8 @@ def tier_delete(request, pk):
 # =============================================================================
 
 @htmx_view(
-    page_template='loyalty/pages/rewards.html',
-    partial_template='loyalty/partials/rewards_list.html'
+    'loyalty/pages/rewards.html',
+    'loyalty/partials/rewards_list.html'
 )
 def rewards_list(request):
     """List rewards."""
@@ -525,8 +525,8 @@ def rewards_list(request):
 
 
 @htmx_view(
-    page_template='loyalty/pages/reward_form.html',
-    partial_template='loyalty/partials/reward_form.html'
+    'loyalty/pages/reward_form.html',
+    'loyalty/partials/reward_form.html'
 )
 def reward_create(request):
     """Create a new reward."""
@@ -590,8 +590,8 @@ def reward_create(request):
 
 
 @htmx_view(
-    page_template='loyalty/pages/reward_detail.html',
-    partial_template='loyalty/partials/reward_detail.html'
+    'loyalty/pages/reward_detail.html',
+    'loyalty/partials/reward_detail.html'
 )
 def reward_detail(request, pk):
     """View reward details."""
@@ -609,8 +609,8 @@ def reward_detail(request, pk):
 
 
 @htmx_view(
-    page_template='loyalty/pages/reward_form.html',
-    partial_template='loyalty/partials/reward_form.html'
+    'loyalty/pages/reward_form.html',
+    'loyalty/partials/reward_form.html'
 )
 def reward_edit(request, pk):
     """Edit a reward."""
@@ -674,8 +674,8 @@ def reward_delete(request, pk):
 # =============================================================================
 
 @htmx_view(
-    page_template='loyalty/pages/transactions.html',
-    partial_template='loyalty/partials/transactions_list.html'
+    'loyalty/pages/transactions.html',
+    'loyalty/partials/transactions_list.html'
 )
 def transactions_list(request):
     """List all point transactions."""
@@ -715,8 +715,8 @@ def transactions_list(request):
 # =============================================================================
 
 @htmx_view(
-    page_template='loyalty/pages/settings.html',
-    partial_template='loyalty/partials/settings_form.html'
+    'loyalty/pages/settings.html',
+    'loyalty/partials/settings_form.html'
 )
 def settings_view(request):
     """Loyalty program settings."""
