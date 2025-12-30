@@ -1,195 +1,242 @@
-{% load i18n %}
+{% load static i18n ui component_tags %}
 
-<!-- OOB Tabbar Update -->
-<ion-footer hx-swap-oob="innerHTML:#section-tabbar">
-{% include "loyalty/partials/tabbar.html" with current_view='settings' %}
-</ion-footer>
+{% component "settings_page"
+    title=_("Loyalty Program Settings")
+    subtitle=_("Configure your loyalty program")
+    tabbar_template="loyalty/partials/tabbar.html"
+    tabbar_view="settings"
+    alpine_app="settingsApp" %}
 
-<ion-content class="ion-padding">
-    <!-- Header -->
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">{% trans "Loyalty Program Settings" %}</h1>
-        <p class="text-gray-500">{% trans "Configure your loyalty program" %}</p>
-    </div>
+    {% fill "settings" %}
+        {% component "setting_section" title=_("Program Settings") %}
+            {% component "setting_input"
+                name="program_name"
+                title=_("Program Name")
+                description=_("Display name for your loyalty program")
+                value=config.program_name
+                type="text"
+                placeholder="Loyalty Program" %}{% endcomponent %}
 
-    <form
-        method="post"
-        hx-post="{% url 'loyalty:settings' %}"
-        hx-target="#dashboard-content">
-        {% csrf_token %}
+            {% component "setting_toggle"
+                name="program_enabled"
+                title=_("Program Enabled")
+                description=_("Enable or disable the loyalty program")
+                checked=config.program_enabled %}{% endcomponent %}
+        {% endcomponent %}
 
-        <!-- Program Settings -->
-        <ion-card class="mb-4">
-            <ion-card-header>
-                <ion-card-title>{% trans "Program Settings" %}</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <ion-label class="text-sm text-gray-600">{% trans "Program Name" %}</ion-label>
-                        <ion-input
-                            name="program_name"
-                            value="{{ config.program_name }}"
-                            class="mt-1">
-                        </ion-input>
-                    </div>
-                    <div class="flex items-center">
-                        <ion-item lines="none" class="w-full">
-                            <ion-checkbox
-                                name="program_enabled"
-                                slot="start"
-                                {% if config.program_enabled %}checked{% endif %}>
-                            </ion-checkbox>
-                            <ion-label>{% trans "Program Enabled" %}</ion-label>
-                        </ion-item>
-                    </div>
-                </div>
-            </ion-card-content>
-        </ion-card>
+        {% component "setting_section" title=_("Points Configuration") %}
+            {% component "setting_input"
+                name="points_per_currency"
+                title=_("Points per Currency Unit")
+                description=_("Points earned per currency unit spent (e.g., 1 point per euro)")
+                value=config.points_per_currency
+                type="number"
+                min=0
+                step="0.01" %}{% endcomponent %}
 
-        <!-- Points Configuration -->
-        <ion-card class="mb-4">
-            <ion-card-header>
-                <ion-card-title>{% trans "Points Configuration" %}</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <ion-label class="text-sm text-gray-600">{% trans "Points per €1" %}</ion-label>
-                        <ion-input
-                            name="points_per_currency"
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value="{{ config.points_per_currency }}"
-                            class="mt-1">
-                        </ion-input>
-                        <p class="text-xs text-gray-500 mt-1">{% trans "Points earned per currency unit spent" %}</p>
-                    </div>
-                    <div>
-                        <ion-label class="text-sm text-gray-600">{% trans "Point Value (€)" %}</ion-label>
-                        <ion-input
-                            name="points_value"
-                            type="number"
-                            min="0"
-                            step="0.0001"
-                            value="{{ config.points_value }}"
-                            class="mt-1">
-                        </ion-input>
-                        <p class="text-xs text-gray-500 mt-1">{% trans "Value of each point when redeemed" %}</p>
-                    </div>
-                    <div>
-                        <ion-label class="text-sm text-gray-600">{% trans "Minimum Points for Redemption" %}</ion-label>
-                        <ion-input
-                            name="minimum_redemption"
-                            type="number"
-                            min="0"
-                            value="{{ config.minimum_redemption }}"
-                            class="mt-1">
-                        </ion-input>
-                    </div>
-                </div>
-            </ion-card-content>
-        </ion-card>
+            {% component "setting_input"
+                name="points_value"
+                title=_("Point Value")
+                description=_("Currency value of each point when redeemed")
+                value=config.points_value
+                type="number"
+                min=0
+                step="0.0001" %}{% endcomponent %}
 
-        <!-- Expiry Settings -->
-        <ion-card class="mb-4">
-            <ion-card-header>
-                <ion-card-title>{% trans "Points Expiry" %}</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex items-center">
-                        <ion-item lines="none" class="w-full">
-                            <ion-checkbox
-                                name="points_expire"
-                                slot="start"
-                                {% if config.points_expire %}checked{% endif %}>
-                            </ion-checkbox>
-                            <ion-label>{% trans "Points Expire" %}</ion-label>
-                        </ion-item>
-                    </div>
-                    <div>
-                        <ion-label class="text-sm text-gray-600">{% trans "Expiry Period (Months)" %}</ion-label>
-                        <ion-input
-                            name="expiry_months"
-                            type="number"
-                            min="1"
-                            value="{{ config.expiry_months }}"
-                            class="mt-1">
-                        </ion-input>
-                    </div>
-                </div>
-            </ion-card-content>
-        </ion-card>
+            {% component "setting_input"
+                name="minimum_redemption"
+                title=_("Minimum Points for Redemption")
+                description=_("Minimum points required to redeem rewards")
+                value=config.minimum_redemption
+                type="number"
+                min=0 %}{% endcomponent %}
+        {% endcomponent %}
 
-        <!-- Enrollment Settings -->
-        <ion-card class="mb-4">
-            <ion-card-header>
-                <ion-card-title>{% trans "Enrollment" %}</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex items-center">
-                        <ion-item lines="none" class="w-full">
-                            <ion-checkbox
-                                name="auto_enroll"
-                                slot="start"
-                                {% if config.auto_enroll %}checked{% endif %}>
-                            </ion-checkbox>
-                            <ion-label>
-                                <h3>{% trans "Auto-Enroll Customers" %}</h3>
-                                <p>{% trans "Automatically enroll on first purchase" %}</p>
-                            </ion-label>
-                        </ion-item>
-                    </div>
-                    <div>
-                        <ion-label class="text-sm text-gray-600">{% trans "Welcome Points" %}</ion-label>
-                        <ion-input
-                            name="welcome_points"
-                            type="number"
-                            min="0"
-                            value="{{ config.welcome_points }}"
-                            class="mt-1">
-                        </ion-input>
-                        <p class="text-xs text-gray-500 mt-1">{% trans "Bonus points given on enrollment" %}</p>
-                    </div>
-                </div>
-            </ion-card-content>
-        </ion-card>
+        {% component "setting_section" title=_("Points Expiry") %}
+            {% component "setting_toggle"
+                name="points_expire"
+                title=_("Points Expire")
+                description=_("Enable expiration of points after a period")
+                checked=config.points_expire
+                color="warning" %}{% endcomponent %}
 
-        <!-- Display Settings -->
-        <ion-card class="mb-4">
-            <ion-card-header>
-                <ion-card-title>{% trans "Display Options" %}</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-                <div class="flex flex-wrap gap-4">
-                    <ion-item lines="none">
-                        <ion-checkbox
-                            name="show_points_on_receipt"
-                            slot="start"
-                            {% if config.show_points_on_receipt %}checked{% endif %}>
-                        </ion-checkbox>
-                        <ion-label>{% trans "Show Points on Receipt" %}</ion-label>
-                    </ion-item>
-                    <ion-item lines="none">
-                        <ion-checkbox
-                            name="show_available_rewards"
-                            slot="start"
-                            {% if config.show_available_rewards %}checked{% endif %}>
-                        </ion-checkbox>
-                        <ion-label>{% trans "Show Available Rewards at Checkout" %}</ion-label>
-                    </ion-item>
-                </div>
-            </ion-card-content>
-        </ion-card>
+            {% component "setting_input"
+                name="expiry_months"
+                title=_("Expiry Period (Months)")
+                description=_("Number of months before points expire")
+                value=config.expiry_months
+                type="number"
+                min=1
+                max=120 %}{% endcomponent %}
+        {% endcomponent %}
 
-        <div class="flex justify-end">
-            <ion-button type="submit">
-                <ion-icon slot="start" name="checkmark"></ion-icon>
-                {% trans "Save Settings" %}
+        {% component "setting_section" title=_("Enrollment") %}
+            {% component "setting_toggle"
+                name="auto_enroll"
+                title=_("Auto-Enroll Customers")
+                description=_("Automatically enroll customers on their first purchase")
+                checked=config.auto_enroll %}{% endcomponent %}
+
+            {% component "setting_input"
+                name="welcome_points"
+                title=_("Welcome Points")
+                description=_("Bonus points given when a customer enrolls")
+                value=config.welcome_points
+                type="number"
+                min=0 %}{% endcomponent %}
+        {% endcomponent %}
+
+        {% component "setting_section" title=_("Display Options") %}
+            {% component "setting_toggle"
+                name="show_points_on_receipt"
+                title=_("Show Points on Receipt")
+                description=_("Display earned points on sale receipts")
+                checked=config.show_points_on_receipt %}{% endcomponent %}
+
+            {% component "setting_toggle"
+                name="show_available_rewards"
+                title=_("Show Available Rewards")
+                description=_("Show available rewards at checkout")
+                checked=config.show_available_rewards %}{% endcomponent %}
+        {% endcomponent %}
+    {% endfill %}
+
+    {% fill "actions" %}
+        <div class="mt-lg pt-md" style="border-top: 1px solid var(--border-color);">
+            <ion-button
+                color="medium"
+                fill="outline"
+                expand="block"
+                @click="resetToDefaults()">
+                <ion-icon slot="start" name="refresh-outline"></ion-icon>
+                {% trans "Reset to Defaults" %}
             </ion-button>
         </div>
-    </form>
-</ion-content>
+    {% endfill %}
+{% endcomponent %}
+
+<script>
+function settingsApp() {
+    return {
+        settings: {
+            program_name: "{{ config.program_name|escapejs }}",
+            program_enabled: {{ config.program_enabled|yesno:"true,false" }},
+            points_per_currency: {{ config.points_per_currency }},
+            points_value: {{ config.points_value }},
+            minimum_redemption: {{ config.minimum_redemption }},
+            points_expire: {{ config.points_expire|yesno:"true,false" }},
+            expiry_months: {{ config.expiry_months }},
+            auto_enroll: {{ config.auto_enroll|yesno:"true,false" }},
+            welcome_points: {{ config.welcome_points }},
+            show_points_on_receipt: {{ config.show_points_on_receipt|yesno:"true,false" }},
+            show_available_rewards: {{ config.show_available_rewards|yesno:"true,false" }}
+        },
+
+        init() {
+            this.$nextTick(() => {
+                // Toggles
+                this.setupToggle('toggle_program_enabled', 'program_enabled');
+                this.setupToggle('toggle_points_expire', 'points_expire');
+                this.setupToggle('toggle_auto_enroll', 'auto_enroll');
+                this.setupToggle('toggle_show_points_on_receipt', 'show_points_on_receipt');
+                this.setupToggle('toggle_show_available_rewards', 'show_available_rewards');
+
+                // Text inputs
+                this.setupInput('input_program_name', 'program_name', 'string');
+
+                // Number inputs
+                this.setupInput('input_points_per_currency', 'points_per_currency', 'decimal');
+                this.setupInput('input_points_value', 'points_value', 'decimal');
+                this.setupInput('input_minimum_redemption', 'minimum_redemption', 'int');
+                this.setupInput('input_expiry_months', 'expiry_months', 'int');
+                this.setupInput('input_welcome_points', 'welcome_points', 'int');
+            });
+        },
+
+        setupToggle(refName, settingKey) {
+            const toggle = this.$refs[refName];
+            if (toggle) {
+                toggle.addEventListener('ionChange', (e) => {
+                    this.updateSetting(settingKey, e.detail.checked);
+                });
+            }
+        },
+
+        setupInput(refName, settingKey, type = 'string') {
+            const input = this.$refs[refName];
+            if (input) {
+                input.addEventListener('ionChange', (e) => {
+                    let value = e.detail.value;
+                    if (type === 'int') {
+                        value = parseInt(value) || 0;
+                    } else if (type === 'decimal') {
+                        value = parseFloat(value) || 0;
+                    }
+                    this.updateSetting(settingKey, value);
+                });
+            }
+        },
+
+        async updateSetting(key, value) {
+            this.settings[key] = value;
+
+            try {
+                const response = await fetch('{% url "loyalty:settings_save" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': Alpine.store('ui').getCsrfToken()
+                    },
+                    body: JSON.stringify(this.settings)
+                });
+
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    Alpine.store('ui').success('{% trans "Settings saved" %}');
+                } else {
+                    throw new Error(result.error || 'Unknown error');
+                }
+            } catch (error) {
+                Alpine.store('ui').error('{% trans "Error saving settings" %}');
+            }
+        },
+
+        async resetToDefaults() {
+            this.settings = {
+                program_name: 'Loyalty Program',
+                program_enabled: true,
+                points_per_currency: 1.00,
+                points_value: 0.01,
+                minimum_redemption: 100,
+                points_expire: false,
+                expiry_months: 12,
+                auto_enroll: true,
+                welcome_points: 0,
+                show_points_on_receipt: true,
+                show_available_rewards: true
+            };
+
+            try {
+                const response = await fetch('{% url "loyalty:settings_save" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': Alpine.store('ui').getCsrfToken()
+                    },
+                    body: JSON.stringify(this.settings)
+                });
+
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    Alpine.store('ui').toast('{% trans "Settings reset to defaults" %}', 'warning');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    throw new Error(result.error || 'Unknown error');
+                }
+            } catch (error) {
+                Alpine.store('ui').error('{% trans "Error resetting settings" %}');
+            }
+        }
+    }
+}
+</script>

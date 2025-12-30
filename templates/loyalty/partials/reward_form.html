@@ -11,7 +11,7 @@
         <ion-button
             fill="clear"
             hx-get="{% url 'loyalty:rewards_list' %}"
-            hx-target="#dashboard-content"
+            hx-target="#main-content-area"
             hx-push-url="true">
             <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
         </ion-button>
@@ -28,7 +28,7 @@
                 method="post"
                 enctype="multipart/form-data"
                 hx-post="{% if is_create %}{% url 'loyalty:reward_create' %}{% else %}{% url 'loyalty:reward_edit' pk=reward.pk %}{% endif %}"
-                hx-target="#dashboard-content"
+                hx-target="#main-content-area"
                 hx-encoding="multipart/form-data">
                 {% csrf_token %}
 
@@ -238,7 +238,7 @@
                         fill="outline"
                         color="medium"
                         hx-get="{% url 'loyalty:rewards_list' %}"
-                        hx-target="#dashboard-content"
+                        hx-target="#main-content-area"
                         hx-push-url="true">
                         {% trans "Cancel" %}
                     </ion-button>

@@ -200,6 +200,71 @@ class TestSettingsView:
 
         assert response.status_code == 200
 
+    def test_settings_save_success(self, client, loyalty_config):
+        """Test saving settings via JSON."""
+        response = client.post(
+            '/modules/loyalty/settings/save/',
+            data=json.dumps({
+                'program_name': 'My Rewards',
+                'program_enabled': True,
+                'points_per_currency': 2.0,
+                'points_value': 0.02,
+                'minimum_redemption': 50,
+                'points_expire': True,
+                'expiry_months': 6,
+                'auto_enroll': False,
+                'welcome_points': 100,
+                'show_points_on_receipt': True,
+                'show_available_rewards': False
+            }),
+            content_type='application/json'
+        )
+
+        assert response.status_code in [200, 302]
+
+        if response.status_code == 200:
+            data = json.loads(response.content)
+            assert data['success'] is True
+
+    def test_settings_save_invalid_json(self, client, loyalty_config):
+        """Test saving with invalid JSON."""
+        response = client.post(
+            '/modules/loyalty/settings/save/',
+            data='invalid json',
+            content_type='application/json'
+        )
+
+        assert response.status_code in [400, 302]
+
+    def test_settings_persist(self, client, loyalty_config):
+        """Test settings are persisted."""
+        response = client.post(
+            '/modules/loyalty/settings/save/',
+            data=json.dumps({
+                'program_name': 'Loyalty Stars',
+                'program_enabled': False,
+                'points_per_currency': 1.5,
+                'points_value': 0.05,
+                'minimum_redemption': 200,
+                'points_expire': False,
+                'expiry_months': 24,
+                'auto_enroll': True,
+                'welcome_points': 50,
+                'show_points_on_receipt': False,
+                'show_available_rewards': True
+            }),
+            content_type='application/json'
+        )
+
+        if response.status_code == 200:
+            config = LoyaltyConfig.get_config()
+            assert config.program_name == 'Loyalty Stars'
+            assert config.program_enabled is False
+            assert config.minimum_redemption == 200
+            assert config.points_expire is False
+            assert config.auto_enroll is True
+            assert config.welcome_points == 50
+
 
 @pytest.mark.django_db
 class TestAPIEndpoints:

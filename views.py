@@ -3,6 +3,9 @@ Loyalty Module Views
 Member management, points, tiers, and rewards.
 """
 
+import json
+import csv
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_http_methods, require_GET, require_POST
@@ -12,7 +15,6 @@ from django.core.paginator import Paginator
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from decimal import Decimal
-import csv
 
 from apps.core.htmx import htmx_view
 
@@ -721,25 +723,44 @@ def transactions_list(request):
 def settings_view(request):
     """Loyalty program settings."""
     config = LoyaltyConfig.get_config()
-
-    if request.method == 'POST':
-        config.program_name = request.POST.get('program_name', 'Loyalty Program').strip()
-        config.program_enabled = request.POST.get('program_enabled') == 'on'
-        config.points_per_currency = Decimal(request.POST.get('points_per_currency', '1.00'))
-        config.points_value = Decimal(request.POST.get('points_value', '0.01'))
-        config.minimum_redemption = int(request.POST.get('minimum_redemption', 100))
-        config.points_expire = request.POST.get('points_expire') == 'on'
-        config.expiry_months = int(request.POST.get('expiry_months', 12))
-        config.auto_enroll = request.POST.get('auto_enroll') == 'on'
-        config.welcome_points = int(request.POST.get('welcome_points', 0))
-        config.show_points_on_receipt = request.POST.get('show_points_on_receipt') == 'on'
-        config.show_available_rewards = request.POST.get('show_available_rewards') == 'on'
-        config.save()
-
-        messages.success(request, _('Settings saved'))
-        return redirect('loyalty:settings')
-
     return {'config': config}
+
+
+@require_POST
+def settings_save(request):
+    """Save loyalty settings via JSON."""
+    try:
+        data = json.loads(request.body)
+        config = LoyaltyConfig.get_config()
+
+        # Program Settings
+        config.program_name = data.get('program_name', 'Loyalty Program')
+        config.program_enabled = data.get('program_enabled', True)
+
+        # Points Configuration
+        config.points_per_currency = Decimal(str(data.get('points_per_currency', '1.00')))
+        config.points_value = Decimal(str(data.get('points_value', '0.01')))
+        config.minimum_redemption = int(data.get('minimum_redemption', 100))
+
+        # Points Expiry
+        config.points_expire = data.get('points_expire', False)
+        config.expiry_months = int(data.get('expiry_months', 12))
+
+        # Enrollment
+        config.auto_enroll = data.get('auto_enroll', True)
+        config.welcome_points = int(data.get('welcome_points', 0))
+
+        # Display Options
+        config.show_points_on_receipt = data.get('show_points_on_receipt', True)
+        config.show_available_rewards = data.get('show_available_rewards', True)
+
+        config.save()
+        return JsonResponse({'success': True, 'message': _('Settings saved')})
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': _('Invalid JSON')}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
 # =============================================================================

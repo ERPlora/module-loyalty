@@ -12,7 +12,7 @@
             <ion-button
                 fill="clear"
                 hx-get="{% url 'loyalty:rewards_list' %}"
-                hx-target="#dashboard-content"
+                hx-target="#main-content-area"
                 hx-push-url="true">
                 <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
             </ion-button>
@@ -38,7 +38,7 @@
             <ion-button
                 fill="outline"
                 hx-get="{% url 'loyalty:reward_edit' pk=reward.pk %}"
-                hx-target="#dashboard-content"
+                hx-target="#main-content-area"
                 hx-push-url="true">
                 <ion-icon slot="start" name="create"></ion-icon>
                 {% trans "Edit" %}
@@ -47,7 +47,7 @@
                 fill="outline"
                 color="danger"
                 hx-post="{% url 'loyalty:reward_delete' pk=reward.pk %}"
-                hx-target="#dashboard-content"
+                hx-target="#main-content-area"
                 hx-confirm="{% trans 'Deactivate this reward?' %}">
                 <ion-icon slot="start" name="close"></ion-icon>
                 {% trans "Deactivate" %}

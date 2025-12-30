@@ -17,28 +17,28 @@
                 <ion-segment-button
                     value="active"
                     hx-get="{% url 'loyalty:rewards_list' %}?status=active"
-                    hx-target="#dashboard-content"
+                    hx-target="#main-content-area"
                     hx-push-url="true">
                     <ion-label>{% trans "Active" %}</ion-label>
                 </ion-segment-button>
                 <ion-segment-button
                     value="inactive"
                     hx-get="{% url 'loyalty:rewards_list' %}?status=inactive"
-                    hx-target="#dashboard-content"
+                    hx-target="#main-content-area"
                     hx-push-url="true">
                     <ion-label>{% trans "Inactive" %}</ion-label>
                 </ion-segment-button>
                 <ion-segment-button
                     value=""
                     hx-get="{% url 'loyalty:rewards_list' %}?status="
-                    hx-target="#dashboard-content"
+                    hx-target="#main-content-area"
                     hx-push-url="true">
                     <ion-label>{% trans "All" %}</ion-label>
                 </ion-segment-button>
             </ion-segment>
             <ion-button
                 hx-get="{% url 'loyalty:reward_create' %}"
-                hx-target="#dashboard-content"
+                hx-target="#main-content-area"
                 hx-push-url="true">
                 <ion-icon slot="start" name="add"></ion-icon>
                 {% trans "Add Reward" %}
@@ -53,7 +53,7 @@
             button
             class="{% if not reward.is_active %}opacity-50{% endif %}"
             hx-get="{% url 'loyalty:reward_detail' pk=reward.pk %}"
-            hx-target="#dashboard-content"
+            hx-target="#main-content-area"
             hx-push-url="true">
             <ion-card-header>
                 <div class="flex items-center justify-between">
@@ -105,7 +105,7 @@
             <ion-button
                 class="mt-4"
                 hx-get="{% url 'loyalty:reward_create' %}"
-                hx-target="#dashboard-content"
+                hx-target="#main-content-area"
                 hx-push-url="true">
                 {% trans "Create First Reward" %}
             </ion-button>

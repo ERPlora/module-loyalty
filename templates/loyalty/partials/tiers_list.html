@@ -14,7 +14,7 @@
         </div>
         <ion-button
             hx-get="{% url 'loyalty:tier_create' %}"
-            hx-target="#dashboard-content"
+            hx-target="#main-content-area"
             hx-push-url="true">
             <ion-icon slot="start" name="add"></ion-icon>
             {% trans "Add Tier" %}
@@ -80,7 +80,7 @@
                         fill="outline"
                         size="small"
                         hx-get="{% url 'loyalty:tier_edit' pk=tier.pk %}"
-                        hx-target="#dashboard-content"
+                        hx-target="#main-content-area"
                         hx-push-url="true"
                         class="flex-1">
                         <ion-icon slot="start" name="create-outline"></ion-icon>
@@ -92,7 +92,7 @@
                         size="small"
                         color="danger"
                         hx-post="{% url 'loyalty:tier_delete' pk=tier.pk %}"
-                        hx-target="#dashboard-content"
+                        hx-target="#main-content-area"
                         hx-confirm="{% trans 'Delete this tier?' %}">
                         <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
                     </ion-button>
@@ -107,7 +107,7 @@
             <ion-button
                 class="mt-4"
                 hx-get="{% url 'loyalty:tier_create' %}"
-                hx-target="#dashboard-content"
+                hx-target="#main-content-area"
                 hx-push-url="true">
                 {% trans "Create First Tier" %}
             </ion-button>

@@ -21,7 +21,7 @@
             </ion-button>
             <ion-button
                 hx-get="{% url 'loyalty:member_create' %}"
-                hx-target="#dashboard-content"
+                hx-target="#main-content-area"
                 hx-push-url="true">
                 <ion-icon slot="start" name="add"></ion-icon>
                 {% trans "Add Member" %}
@@ -34,7 +34,7 @@
         <ion-card-content>
             <form
                 hx-get="{% url 'loyalty:members_list' %}"
-                hx-target="#dashboard-content"
+                hx-target="#main-content-area"
                 hx-push-url="true"
                 class="flex flex-wrap gap-4 items-end">
 
@@ -82,7 +82,7 @@
                 <ion-item
                     button
                     hx-get="{% url 'loyalty:member_detail' pk=member.pk %}"
-                    hx-target="#dashboard-content"
+                    hx-target="#main-content-area"
                     hx-push-url="true">
                     <ion-avatar slot="start">
                         <div class="w-full h-full flex items-center justify-center bg-blue-500 text-white font-bold">
@@ -126,7 +126,7 @@
         <ion-button
             fill="outline"
             hx-get="{% url 'loyalty:members_list' %}?page={{ page_obj.previous_page_number }}&search={{ search }}&tier={{ tier_filter }}&status={{ status_filter }}"
-            hx-target="#dashboard-content"
+            hx-target="#main-content-area"
             hx-push-url="true">
             <ion-icon slot="start" name="chevron-back"></ion-icon>
             {% trans "Previous" %}
@@ -141,7 +141,7 @@
         <ion-button
             fill="outline"
             hx-get="{% url 'loyalty:members_list' %}?page={{ page_obj.next_page_number }}&search={{ search }}&tier={{ tier_filter }}&status={{ status_filter }}"
-            hx-target="#dashboard-content"
+            hx-target="#main-content-area"
             hx-push-url="true">
             {% trans "Next" %}
             <ion-icon slot="end" name="chevron-forward"></ion-icon>

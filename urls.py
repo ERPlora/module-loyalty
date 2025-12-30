@@ -35,6 +35,7 @@ urlpatterns = [
 
     # Settings
     path('settings/', views.settings_view, name='settings'),
+    path('settings/save/', views.settings_save, name='settings_save'),
 
     # API endpoints (for POS integration)
     path('api/search/', views.api_member_search, name='api_member_search'),

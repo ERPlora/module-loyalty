@@ -19,7 +19,7 @@
         <ion-card-content>
             <form
                 hx-get="{% url 'loyalty:transactions_list' %}"
-                hx-target="#dashboard-content"
+                hx-target="#main-content-area"
                 hx-push-url="true"
                 class="flex flex-wrap gap-4 items-end">
 
@@ -93,7 +93,7 @@
         <ion-button
             fill="outline"
             hx-get="{% url 'loyalty:transactions_list' %}?page={{ page_obj.previous_page_number }}&search={{ search }}&type={{ type_filter }}"
-            hx-target="#dashboard-content"
+            hx-target="#main-content-area"
             hx-push-url="true">
             <ion-icon slot="start" name="chevron-back"></ion-icon>
             {% trans "Previous" %}
@@ -108,7 +108,7 @@
         <ion-button
             fill="outline"
             hx-get="{% url 'loyalty:transactions_list' %}?page={{ page_obj.next_page_number }}&search={{ search }}&type={{ type_filter }}"
-            hx-target="#dashboard-content"
+            hx-target="#main-content-area"
             hx-push-url="true">
             {% trans "Next" %}
             <ion-icon slot="end" name="chevron-forward"></ion-icon>

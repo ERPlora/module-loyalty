@@ -12,7 +12,7 @@
             <ion-button
                 fill="clear"
                 hx-get="{% url 'loyalty:members_list' %}"
-                hx-target="#dashboard-content"
+                hx-target="#main-content-area"
                 hx-push-url="true">
                 <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
             </ion-button>
@@ -38,7 +38,7 @@
             <ion-button
                 color="success"
                 hx-get="{% url 'loyalty:member_add_points' pk=member.pk %}"
-                hx-target="#dashboard-content"
+                hx-target="#main-content-area"
                 hx-push-url="true">
                 <ion-icon slot="start" name="add"></ion-icon>
                 {% trans "Add Points" %}
@@ -46,7 +46,7 @@
             <ion-button
                 color="secondary"
                 hx-get="{% url 'loyalty:member_redeem' pk=member.pk %}"
-                hx-target="#dashboard-content"
+                hx-target="#main-content-area"
                 hx-push-url="true">
                 <ion-icon slot="start" name="gift"></ion-icon>
                 {% trans "Redeem" %}
@@ -54,7 +54,7 @@
             <ion-button
                 fill="outline"
                 hx-get="{% url 'loyalty:member_edit' pk=member.pk %}"
-                hx-target="#dashboard-content"
+                hx-target="#main-content-area"
                 hx-push-url="true">
                 <ion-icon slot="start" name="create"></ion-icon>
                 {% trans "Edit" %}

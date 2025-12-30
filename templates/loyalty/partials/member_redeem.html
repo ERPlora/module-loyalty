@@ -11,7 +11,7 @@
         <ion-button
             fill="clear"
             hx-get="{% url 'loyalty:member_detail' pk=member.pk %}"
-            hx-target="#dashboard-content"
+            hx-target="#main-content-area"
             hx-push-url="true">
             <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
         </ion-button>
@@ -57,7 +57,7 @@
                 <form
                     method="post"
                     hx-post="{% url 'loyalty:member_redeem' pk=member.pk %}"
-                    hx-target="#dashboard-content">
+                    hx-target="#main-content-area">
                     {% csrf_token %}
                     <input type="hidden" name="reward_id" value="{{ item.reward.pk }}">
                     <ion-button expand="block" color="success" type="submit">

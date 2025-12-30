@@ -11,7 +11,7 @@
         <ion-button
             fill="clear"
             hx-get="{% url 'loyalty:members_list' %}"
-            hx-target="#dashboard-content"
+            hx-target="#main-content-area"
             hx-push-url="true">
             <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
         </ion-button>
@@ -27,7 +27,7 @@
             <form
                 method="post"
                 hx-post="{% if is_create %}{% url 'loyalty:member_create' %}{% else %}{% url 'loyalty:member_edit' pk=member.pk %}{% endif %}"
-                hx-target="#dashboard-content">
+                hx-target="#main-content-area">
                 {% csrf_token %}
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -118,7 +118,7 @@
                         fill="outline"
                         color="medium"
                         hx-get="{% url 'loyalty:members_list' %}"
-                        hx-target="#dashboard-content"
+                        hx-target="#main-content-area"
                         hx-push-url="true">
                         {% trans "Cancel" %}
                     </ion-button>
