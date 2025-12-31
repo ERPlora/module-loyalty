@@ -1,20 +1,8 @@
-{% extends "ui/content_base.html" %}
+{% extends "ui/app_base.html" %}
 {% load static %}
 {% load i18n %}
 
 {% block page_title %}{{ reward.name }}{% endblock %}
-
-{% block content %}
-{% with current_section="loyalty" section_title=_("Loyalty") %}
-{{ block.super }}
-{% endwith %}
-{% endblock %}
-
-{% block module_tabbar %}
-
-{% include "loyalty/partials/tabbar.html" with current_view='rewards' %}
-
-{% endblock %}
 
 {% block page_content %}
 {% include "loyalty/partials/reward_detail.html" %}

@@ -1,22 +1,10 @@
-{% extends "ui/content_base.html" %}
+{% extends "ui/app_base.html" %}
 {% load static %}
 {% load i18n %}
 
 {% block page_title %}
     {% if is_create %}{% trans "Add Member" %}
     {% else %}{% trans "Edit Member" %}{% endif %}
-{% endblock %}
-
-{% block content %}
-{% with current_section="loyalty" section_title=_("Loyalty") %}
-{{ block.super }}
-{% endwith %}
-{% endblock %}
-
-{% block module_tabbar %}
-
-{% include "loyalty/partials/tabbar.html" with current_view='members' %}
-
 {% endblock %}
 
 {% block page_content %}

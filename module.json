@@ -75,6 +75,50 @@
     "url": "/modules/loyalty/",
     "order": 45
   },
+  "tabs": [
+    {
+      "id": "dashboard",
+      "label": "Overview",
+      "label_es": "Resumen",
+      "icon": "grid-outline",
+      "url_name": "loyalty:dashboard"
+    },
+    {
+      "id": "members",
+      "label": "Members",
+      "label_es": "Miembros",
+      "icon": "people-outline",
+      "url_name": "loyalty:members_list"
+    },
+    {
+      "id": "rewards",
+      "label": "Rewards",
+      "label_es": "Recompensas",
+      "icon": "gift-outline",
+      "url_name": "loyalty:rewards_list"
+    },
+    {
+      "id": "tiers",
+      "label": "Tiers",
+      "label_es": "Niveles",
+      "icon": "ribbon-outline",
+      "url_name": "loyalty:tiers_list"
+    },
+    {
+      "id": "transactions",
+      "label": "History",
+      "label_es": "Historial",
+      "icon": "list-outline",
+      "url_name": "loyalty:transactions_list"
+    },
+    {
+      "id": "settings",
+      "label": "Settings",
+      "label_es": "Configuración",
+      "icon": "settings-outline",
+      "url_name": "loyalty:settings"
+    }
+  ],
   "settings": {
     "program_enabled": {
       "type": "boolean",

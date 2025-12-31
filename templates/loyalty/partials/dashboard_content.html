@@ -1,7 +1,7 @@
-{% load i18n ui %}
+{% load i18n ui component_tags %}
 
 {% if request.htmx %}
-{% include "loyalty/partials/tabbar.html" with current_view='dashboard' oob=True %}
+{% component "tabbar" module_id="loyalty" current_view="dashboard" oob=True %}
 {% endif %}
 
 {% ui_page_header title=config.program_name subtitle=_("Loyalty program overview and statistics") %}

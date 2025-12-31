@@ -1,9 +1,8 @@
-{% load i18n %}
+{% load i18n component_tags %}
 
-<!-- OOB Tabbar Update -->
-<ion-footer hx-swap-oob="innerHTML:#section-tabbar">
-{% include "loyalty/partials/tabbar.html" with current_view='transactions' %}
-</ion-footer>
+{% if request.htmx %}
+{% component "tabbar" module_id="loyalty" current_view="transactions" oob=True %}
+{% endif %}
 
 <ion-content class="ion-padding">
     <!-- Header -->

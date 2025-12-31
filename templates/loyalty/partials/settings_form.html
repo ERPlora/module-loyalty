@@ -1,10 +1,12 @@
 {% load static i18n ui component_tags %}
 
+{% if request.htmx %}
+{% component "tabbar" module_id="loyalty" current_view="settings" oob=True %}
+{% endif %}
+
 {% component "settings_page"
     title=_("Loyalty Program Settings")
     subtitle=_("Configure your loyalty program")
-    tabbar_template="loyalty/partials/tabbar.html"
-    tabbar_view="settings"
     alpine_app="settingsApp" %}
 
     {% fill "settings" %}
