@@ -1,142 +1,143 @@
 {% load i18n ui component_tags %}
 
-{% if request.htmx %}
-{% component "tabbar" module_id="loyalty" current_view="dashboard" oob=True %}
-{% endif %}
+{% component "page"
+    title=config.program_name
+    subtitle=_("Loyalty program overview and statistics")
+    module_id="loyalty"
+    tabbar_view="dashboard" %}
 
-{% ui_page_header title=config.program_name subtitle=_("Loyalty program overview and statistics") %}
-
-<div class="ion-padding">
-    {% if not config.program_enabled %}
-    <div class="mb-md">
-        <ion-badge color="warning">{% trans "Program Disabled" %}</ion-badge>
-    </div>
-    {% endif %}
-
-    <!-- Stats Cards -->
-    <ion-row class="mb-md">
-        <ion-col size="6" size-md="3">
-            {% ui_stat_card value=total_members label=_("Total Members") icon="people-outline" color="primary" %}
-        </ion-col>
-        <ion-col size="6" size-md="3">
-            {% ui_stat_card value=points_in_circulation|default:0 label=_("Points in Circulation") icon="star-outline" color="success" %}
-        </ion-col>
-        <ion-col size="6" size-md="3">
-            {% ui_stat_card value=total_points_redeemed|default:0 label=_("Points Redeemed") icon="gift-outline" color="tertiary" %}
-        </ion-col>
-        <ion-col size="6" size-md="3">
-            {% ui_stat_card value=active_rewards label=_("Active Rewards") icon="trophy-outline" color="warning" %}
-        </ion-col>
-    </ion-row>
-
-    <ion-row class="mb-md">
-        <!-- Top Members -->
-        <ion-col size="12" size-lg="4">
-            {% ui_card title=_("Top Members") %}
-                <ion-list lines="full">
-                    {% for member in top_members %}
-                    <ion-item button
-                        hx-get="{% url 'loyalty:member_detail' pk=member.pk %}"
-                        hx-target="#main-content-area"
-                        hx-push-url="true">
-                        <ion-avatar slot="start">
-                            <div class="w-100 h-100 d-flex align-center justify-center bg-primary text-white fw-bold">
-                                {{ member.name|slice:":1"|upper }}
-                            </div>
-                        </ion-avatar>
-                        <ion-label>
-                            <h3>{{ member.name }}</h3>
-                            <p>{{ member.lifetime_points }} {% trans "points" %}</p>
-                        </ion-label>
-                        {% if member.tier %}
-                        <ion-badge slot="end" style="--background: {{ member.tier.color }};">
-                            {{ member.tier.name }}
-                        </ion-badge>
-                        {% endif %}
-                    </ion-item>
-                    {% empty %}
-                    <ion-item>
-                        <ion-label class="text-secondary">{% trans "No members yet" %}</ion-label>
-                    </ion-item>
-                    {% endfor %}
-                </ion-list>
-            {% endui_card %}
-        </ion-col>
-
-        <!-- Tier Distribution -->
-        <ion-col size="12" size-lg="4">
-            {% ui_card title=_("Tier Distribution") %}
-                <ion-list lines="full">
-                    {% for stat in tier_stats %}
-                    <ion-item>
-                        <div slot="start" class="rounded-full" style="width: 16px; height: 16px; background-color: {{ stat.tier__color|default:'#gray' }};"></div>
-                        <ion-label>{{ stat.tier__name|default:"No Tier" }}</ion-label>
-                        <ion-badge slot="end">{{ stat.count }}</ion-badge>
-                    </ion-item>
-                    {% empty %}
-                    <ion-item>
-                        <ion-label class="text-secondary">{% trans "No data" %}</ion-label>
-                    </ion-item>
-                    {% endfor %}
-                </ion-list>
-            {% endui_card %}
-        </ion-col>
-
-        <!-- Recent Activity -->
-        <ion-col size="12" size-lg="4">
-            {% ui_card title=_("Recent Activity") %}
-                <ion-list lines="full">
-                    {% for tx in recent_transactions %}
-                    <ion-item>
-                        <ion-icon
-                            slot="start"
-                            name="{% if tx.points > 0 %}add-circle{% else %}remove-circle{% endif %}"
-                            class="{% if tx.points > 0 %}text-success{% else %}text-danger{% endif %}">
-                        </ion-icon>
-                        <ion-label>
-                            <h3>{{ tx.member.name }}</h3>
-                            <p>{{ tx.description|default:tx.get_transaction_type_display }}</p>
-                        </ion-label>
-                        <ion-note slot="end" class="{% if tx.points > 0 %}text-success{% else %}text-danger{% endif %}">
-                            {% if tx.points > 0 %}+{% endif %}{{ tx.points }}
-                        </ion-note>
-                    </ion-item>
-                    {% empty %}
-                    <ion-item>
-                        <ion-label class="text-secondary">{% trans "No activity yet" %}</ion-label>
-                    </ion-item>
-                    {% endfor %}
-                </ion-list>
-            {% endui_card %}
-        </ion-col>
-    </ion-row>
-
-    <!-- Quick Actions -->
-    {% ui_card title=_("Quick Actions") %}
-        <div class="d-flex flex-wrap gap-sm">
-            <ion-button
-                hx-get="{% url 'loyalty:member_create' %}"
-                hx-target="#main-content-area"
-                hx-push-url="true">
-                <ion-icon slot="start" name="person-add-outline"></ion-icon>
-                {% trans "Add Member" %}
-            </ion-button>
-            <ion-button
-                color="secondary"
-                hx-get="{% url 'loyalty:reward_create' %}"
-                hx-target="#main-content-area"
-                hx-push-url="true">
-                <ion-icon slot="start" name="gift-outline"></ion-icon>
-                {% trans "Create Reward" %}
-            </ion-button>
-            <ion-button
-                color="tertiary"
-                hx-get="{% url 'loyalty:tier_create' %}"
-                hx-target="#main-content-area"
-                hx-push-url="true">
-                <ion-icon slot="start" name="ribbon-outline"></ion-icon>
-                {% trans "Add Tier" %}
-            </ion-button>
+    {% fill "content" %}
+        {% if not config.program_enabled %}
+        <div class="mb-md">
+            <ion-badge color="warning">{% trans "Program Disabled" %}</ion-badge>
         </div>
-    {% endui_card %}
-</div>
+        {% endif %}
+
+        <!-- Stats Cards -->
+        <ion-row class="mb-md">
+            <ion-col size="6" size-md="3">
+                {% ui_stat_card value=total_members label=_("Total Members") icon="people-outline" color="primary" %}
+            </ion-col>
+            <ion-col size="6" size-md="3">
+                {% ui_stat_card value=points_in_circulation|default:0 label=_("Points in Circulation") icon="star-outline" color="success" %}
+            </ion-col>
+            <ion-col size="6" size-md="3">
+                {% ui_stat_card value=total_points_redeemed|default:0 label=_("Points Redeemed") icon="gift-outline" color="tertiary" %}
+            </ion-col>
+            <ion-col size="6" size-md="3">
+                {% ui_stat_card value=active_rewards label=_("Active Rewards") icon="trophy-outline" color="warning" %}
+            </ion-col>
+        </ion-row>
+
+        <ion-row class="mb-md">
+            <!-- Top Members -->
+            <ion-col size="12" size-lg="4">
+                {% ui_card title=_("Top Members") %}
+                    <ion-list lines="full">
+                        {% for member in top_members %}
+                        <ion-item button
+                            hx-get="{% url 'loyalty:member_detail' pk=member.pk %}"
+                            hx-target="#main-content-area"
+                            hx-push-url="true">
+                            <ion-avatar slot="start">
+                                <div class="w-100 h-100 d-flex align-center justify-center bg-primary text-white fw-bold">
+                                    {{ member.name|slice:":1"|upper }}
+                                </div>
+                            </ion-avatar>
+                            <ion-label>
+                                <h3>{{ member.name }}</h3>
+                                <p>{{ member.lifetime_points }} {% trans "points" %}</p>
+                            </ion-label>
+                            {% if member.tier %}
+                            <ion-badge slot="end" style="--background: {{ member.tier.color }};">
+                                {{ member.tier.name }}
+                            </ion-badge>
+                            {% endif %}
+                        </ion-item>
+                        {% empty %}
+                        <ion-item>
+                            <ion-label class="text-secondary">{% trans "No members yet" %}</ion-label>
+                        </ion-item>
+                        {% endfor %}
+                    </ion-list>
+                {% endui_card %}
+            </ion-col>
+
+            <!-- Tier Distribution -->
+            <ion-col size="12" size-lg="4">
+                {% ui_card title=_("Tier Distribution") %}
+                    <ion-list lines="full">
+                        {% for stat in tier_stats %}
+                        <ion-item>
+                            <div slot="start" class="rounded-full" style="width: 16px; height: 16px; background-color: {{ stat.tier__color|default:'#gray' }};"></div>
+                            <ion-label>{{ stat.tier__name|default:"No Tier" }}</ion-label>
+                            <ion-badge slot="end">{{ stat.count }}</ion-badge>
+                        </ion-item>
+                        {% empty %}
+                        <ion-item>
+                            <ion-label class="text-secondary">{% trans "No data" %}</ion-label>
+                        </ion-item>
+                        {% endfor %}
+                    </ion-list>
+                {% endui_card %}
+            </ion-col>
+
+            <!-- Recent Activity -->
+            <ion-col size="12" size-lg="4">
+                {% ui_card title=_("Recent Activity") %}
+                    <ion-list lines="full">
+                        {% for tx in recent_transactions %}
+                        <ion-item>
+                            <ion-icon
+                                slot="start"
+                                name="{% if tx.points > 0 %}add-circle{% else %}remove-circle{% endif %}"
+                                class="{% if tx.points > 0 %}text-success{% else %}text-danger{% endif %}">
+                            </ion-icon>
+                            <ion-label>
+                                <h3>{{ tx.member.name }}</h3>
+                                <p>{{ tx.description|default:tx.get_transaction_type_display }}</p>
+                            </ion-label>
+                            <ion-note slot="end" class="{% if tx.points > 0 %}text-success{% else %}text-danger{% endif %}">
+                                {% if tx.points > 0 %}+{% endif %}{{ tx.points }}
+                            </ion-note>
+                        </ion-item>
+                        {% empty %}
+                        <ion-item>
+                            <ion-label class="text-secondary">{% trans "No activity yet" %}</ion-label>
+                        </ion-item>
+                        {% endfor %}
+                    </ion-list>
+                {% endui_card %}
+            </ion-col>
+        </ion-row>
+
+        <!-- Quick Actions -->
+        {% ui_card title=_("Quick Actions") %}
+            <div class="d-flex flex-wrap gap-sm">
+                <ion-button
+                    hx-get="{% url 'loyalty:member_create' %}"
+                    hx-target="#main-content-area"
+                    hx-push-url="true">
+                    <ion-icon slot="start" name="person-add-outline"></ion-icon>
+                    {% trans "Add Member" %}
+                </ion-button>
+                <ion-button
+                    color="secondary"
+                    hx-get="{% url 'loyalty:reward_create' %}"
+                    hx-target="#main-content-area"
+                    hx-push-url="true">
+                    <ion-icon slot="start" name="gift-outline"></ion-icon>
+                    {% trans "Create Reward" %}
+                </ion-button>
+                <ion-button
+                    color="tertiary"
+                    hx-get="{% url 'loyalty:tier_create' %}"
+                    hx-target="#main-content-area"
+                    hx-push-url="true">
+                    <ion-icon slot="start" name="ribbon-outline"></ion-icon>
+                    {% trans "Add Tier" %}
+                </ion-button>
+            </div>
+        {% endui_card %}
+    {% endfill %}
+{% endcomponent %}

@@ -1,132 +1,127 @@
 {% load i18n component_tags %}
 
-{% if request.htmx %}
-{% component "tabbar" module_id="loyalty" current_view="members" oob=True %}
+{% if is_create %}
+{% component "page"
+    title=_("Add Member")
+    module_id="loyalty"
+    tabbar_view="members"
+    back_url="loyalty:members_list" %}
+{% else %}
+{% component "page"
+    title=_("Edit Member")
+    module_id="loyalty"
+    tabbar_view="members"
+    back_url="loyalty:members_list" %}
 {% endif %}
 
-<ion-content class="ion-padding">
-    <!-- Header -->
-    <div class="flex items-center gap-4 mb-6">
-        <ion-button
-            fill="clear"
-            hx-get="{% url 'loyalty:members_list' %}"
-            hx-target="#main-content-area"
-            hx-push-url="true">
-            <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
-        </ion-button>
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">
-                {% if is_create %}{% trans "Add Member" %}{% else %}{% trans "Edit Member" %}{% endif %}
-            </h1>
-        </div>
-    </div>
+    {% fill "content" %}
+        <ion-card>
+            <ion-card-content>
+                <form
+                    method="post"
+                    hx-post="{% if is_create %}{% url 'loyalty:member_create' %}{% else %}{% url 'loyalty:member_edit' pk=member.pk %}{% endif %}"
+                    hx-target="#main-content-area">
+                    {% csrf_token %}
 
-    <ion-card>
-        <ion-card-content>
-            <form
-                method="post"
-                hx-post="{% if is_create %}{% url 'loyalty:member_create' %}{% else %}{% url 'loyalty:member_edit' pk=member.pk %}{% endif %}"
-                hx-target="#main-content-area">
-                {% csrf_token %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Name -->
+                        <div class="md:col-span-2">
+                            <ion-label class="text-sm text-gray-600">{% trans "Name" %} *</ion-label>
+                            <ion-input
+                                name="name"
+                                value="{% if is_create %}{{ form_data.name|default:'' }}{% else %}{{ member.name }}{% endif %}"
+                                required
+                                class="mt-1">
+                            </ion-input>
+                        </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Name -->
-                    <div class="md:col-span-2">
-                        <ion-label class="text-sm text-gray-600">{% trans "Name" %} *</ion-label>
-                        <ion-input
-                            name="name"
-                            value="{% if is_create %}{{ form_data.name|default:'' }}{% else %}{{ member.name }}{% endif %}"
-                            required
-                            class="mt-1">
-                        </ion-input>
+                        <!-- Email -->
+                        <div>
+                            <ion-label class="text-sm text-gray-600">{% trans "Email" %}</ion-label>
+                            <ion-input
+                                name="email"
+                                type="email"
+                                value="{% if is_create %}{{ form_data.email|default:'' }}{% else %}{{ member.email }}{% endif %}"
+                                class="mt-1">
+                            </ion-input>
+                        </div>
+
+                        <!-- Phone -->
+                        <div>
+                            <ion-label class="text-sm text-gray-600">{% trans "Phone" %}</ion-label>
+                            <ion-input
+                                name="phone"
+                                value="{% if is_create %}{{ form_data.phone|default:'' }}{% else %}{{ member.phone }}{% endif %}"
+                                class="mt-1">
+                            </ion-input>
+                        </div>
+
+                        <!-- Card Number -->
+                        <div>
+                            <ion-label class="text-sm text-gray-600">{% trans "Card Number" %}</ion-label>
+                            <ion-input
+                                name="card_number"
+                                value="{% if is_create %}{{ form_data.card_number|default:'' }}{% else %}{{ member.card_number|default:'' }}{% endif %}"
+                                placeholder="{% trans 'Physical or digital card' %}"
+                                class="mt-1">
+                            </ion-input>
+                        </div>
+
+                        <!-- Tier -->
+                        <div>
+                            <ion-label class="text-sm text-gray-600">{% trans "Tier" %}</ion-label>
+                            <ion-select
+                                name="tier"
+                                value="{% if is_create %}{{ form_data.tier|default:'' }}{% else %}{{ member.tier_id|default:'' }}{% endif %}"
+                                interface="popover"
+                                class="mt-1">
+                                <ion-select-option value="">{% trans "Default Tier" %}</ion-select-option>
+                                {% for tier in tiers %}
+                                <ion-select-option value="{{ tier.pk }}">{{ tier.name }}</ion-select-option>
+                                {% endfor %}
+                            </ion-select>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="md:col-span-2">
+                            <ion-label class="text-sm text-gray-600">{% trans "Notes" %}</ion-label>
+                            <ion-textarea
+                                name="notes"
+                                rows="3"
+                                class="mt-1">{% if is_create %}{{ form_data.notes|default:'' }}{% else %}{{ member.notes }}{% endif %}</ion-textarea>
+                        </div>
+
+                        {% if not is_create %}
+                        <!-- Status -->
+                        <div class="md:col-span-2">
+                            <ion-item lines="none">
+                                <ion-checkbox
+                                    name="is_active"
+                                    slot="start"
+                                    {% if member.is_active %}checked{% endif %}>
+                                </ion-checkbox>
+                                <ion-label>{% trans "Active" %}</ion-label>
+                            </ion-item>
+                        </div>
+                        {% endif %}
                     </div>
 
-                    <!-- Email -->
-                    <div>
-                        <ion-label class="text-sm text-gray-600">{% trans "Email" %}</ion-label>
-                        <ion-input
-                            name="email"
-                            type="email"
-                            value="{% if is_create %}{{ form_data.email|default:'' }}{% else %}{{ member.email }}{% endif %}"
-                            class="mt-1">
-                        </ion-input>
+                    <div class="flex justify-end gap-3 mt-6">
+                        <ion-button
+                            fill="outline"
+                            color="medium"
+                            hx-get="{% url 'loyalty:members_list' %}"
+                            hx-target="#main-content-area"
+                            hx-push-url="true">
+                            {% trans "Cancel" %}
+                        </ion-button>
+                        <ion-button type="submit">
+                            <ion-icon slot="start" name="checkmark"></ion-icon>
+                            {% if is_create %}{% trans "Create Member" %}{% else %}{% trans "Save Changes" %}{% endif %}
+                        </ion-button>
                     </div>
-
-                    <!-- Phone -->
-                    <div>
-                        <ion-label class="text-sm text-gray-600">{% trans "Phone" %}</ion-label>
-                        <ion-input
-                            name="phone"
-                            value="{% if is_create %}{{ form_data.phone|default:'' }}{% else %}{{ member.phone }}{% endif %}"
-                            class="mt-1">
-                        </ion-input>
-                    </div>
-
-                    <!-- Card Number -->
-                    <div>
-                        <ion-label class="text-sm text-gray-600">{% trans "Card Number" %}</ion-label>
-                        <ion-input
-                            name="card_number"
-                            value="{% if is_create %}{{ form_data.card_number|default:'' }}{% else %}{{ member.card_number|default:'' }}{% endif %}"
-                            placeholder="{% trans 'Physical or digital card' %}"
-                            class="mt-1">
-                        </ion-input>
-                    </div>
-
-                    <!-- Tier -->
-                    <div>
-                        <ion-label class="text-sm text-gray-600">{% trans "Tier" %}</ion-label>
-                        <ion-select
-                            name="tier"
-                            value="{% if is_create %}{{ form_data.tier|default:'' }}{% else %}{{ member.tier_id|default:'' }}{% endif %}"
-                            interface="popover"
-                            class="mt-1">
-                            <ion-select-option value="">{% trans "Default Tier" %}</ion-select-option>
-                            {% for tier in tiers %}
-                            <ion-select-option value="{{ tier.pk }}">{{ tier.name }}</ion-select-option>
-                            {% endfor %}
-                        </ion-select>
-                    </div>
-
-                    <!-- Notes -->
-                    <div class="md:col-span-2">
-                        <ion-label class="text-sm text-gray-600">{% trans "Notes" %}</ion-label>
-                        <ion-textarea
-                            name="notes"
-                            rows="3"
-                            class="mt-1">{% if is_create %}{{ form_data.notes|default:'' }}{% else %}{{ member.notes }}{% endif %}</ion-textarea>
-                    </div>
-
-                    {% if not is_create %}
-                    <!-- Status -->
-                    <div class="md:col-span-2">
-                        <ion-item lines="none">
-                            <ion-checkbox
-                                name="is_active"
-                                slot="start"
-                                {% if member.is_active %}checked{% endif %}>
-                            </ion-checkbox>
-                            <ion-label>{% trans "Active" %}</ion-label>
-                        </ion-item>
-                    </div>
-                    {% endif %}
-                </div>
-
-                <div class="flex justify-end gap-3 mt-6">
-                    <ion-button
-                        fill="outline"
-                        color="medium"
-                        hx-get="{% url 'loyalty:members_list' %}"
-                        hx-target="#main-content-area"
-                        hx-push-url="true">
-                        {% trans "Cancel" %}
-                    </ion-button>
-                    <ion-button type="submit">
-                        <ion-icon slot="start" name="checkmark"></ion-icon>
-                        {% if is_create %}{% trans "Create Member" %}{% else %}{% trans "Save Changes" %}{% endif %}
-                    </ion-button>
-                </div>
-            </form>
-        </ion-card-content>
-    </ion-card>
-</ion-content>
+                </form>
+            </ion-card-content>
+        </ion-card>
+    {% endfill %}
+{% endcomponent %}

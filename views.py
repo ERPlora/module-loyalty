@@ -763,6 +763,63 @@ def settings_save(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
+@require_POST
+def settings_toggle(request):
+    """HTMX: Toggle a single boolean setting and return success response."""
+    # Support both 'name'/'value' (new components) and 'setting_name'/'setting_value' (legacy)
+    name = request.POST.get('name') or request.POST.get('setting_name')
+    value = request.POST.get('value', request.POST.get('setting_value', 'false'))
+    setting_value = value == 'true' or value is True
+
+    config = LoyaltyConfig.get_config()
+
+    boolean_settings = [
+        'program_enabled', 'points_expire', 'auto_enroll',
+        'show_points_on_receipt', 'show_available_rewards'
+    ]
+
+    if not name or name not in boolean_settings:
+        return JsonResponse({'success': False, 'error': 'Invalid setting'}, status=400)
+
+    setattr(config, name, setting_value)
+    config.save()
+
+    response = HttpResponse(status=204)
+    response['HX-Trigger'] = json.dumps({
+        'showToast': {'message': str(_('Setting saved')), 'color': 'success'}
+    })
+    return response
+
+
+@require_POST
+def settings_reset(request):
+    """HTMX: Reset all settings to defaults and return settings page."""
+    config = LoyaltyConfig.get_config()
+
+    # Reset to defaults
+    config.program_name = 'Loyalty Program'
+    config.program_enabled = True
+    config.points_per_currency = Decimal('1.00')
+    config.points_value = Decimal('0.01')
+    config.minimum_redemption = 100
+    config.points_expire = False
+    config.expiry_months = 12
+    config.auto_enroll = True
+    config.welcome_points = 0
+    config.show_points_on_receipt = True
+    config.show_available_rewards = True
+    config.save()
+
+    # Return the settings page content with toast
+    response = render(request, 'loyalty/partials/settings_form.html', {
+        'config': config,
+    })
+    response['HX-Trigger'] = json.dumps({
+        'showToast': {'message': str(_('Settings reset to defaults')), 'color': 'warning'}
+    })
+    return response
+
+
 # =============================================================================
 # API Endpoints (for POS integration)
 # =============================================================================

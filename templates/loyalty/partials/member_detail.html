@@ -1,234 +1,217 @@
 {% load i18n component_tags %}
 
-{% if request.htmx %}
-{% component "tabbar" module_id="loyalty" current_view="members" oob=True %}
-{% endif %}
+{% component "page"
+    title=member.name
+    subtitle=member.member_number
+    module_id="loyalty"
+    tabbar_view="members"
+    back_url="loyalty:members_list" %}
 
-<ion-content class="ion-padding">
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
-        <div class="flex items-center gap-4">
-            <ion-button
-                fill="clear"
-                hx-get="{% url 'loyalty:members_list' %}"
-                hx-target="#main-content-area"
-                hx-push-url="true">
-                <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
-            </ion-button>
-            <ion-avatar class="w-16 h-16">
-                <div class="w-full h-full flex items-center justify-center bg-blue-500 text-white text-2xl font-bold">
-                    {{ member.name|slice:":1"|upper }}
-                </div>
-            </ion-avatar>
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">{{ member.name }}</h1>
-                <p class="text-gray-500">{{ member.member_number }}</p>
-                {% if member.tier %}
-                <ion-badge style="--background: {{ member.tier.color }};">
-                    {{ member.tier.name }}
-                </ion-badge>
-                {% endif %}
-                {% if not member.is_active %}
-                <ion-badge color="danger">{% trans "Inactive" %}</ion-badge>
-                {% endif %}
-            </div>
-        </div>
-        <div class="flex gap-2">
-            <ion-button
-                color="success"
-                hx-get="{% url 'loyalty:member_add_points' pk=member.pk %}"
-                hx-target="#main-content-area"
-                hx-push-url="true">
-                <ion-icon slot="start" name="add"></ion-icon>
-                {% trans "Add Points" %}
-            </ion-button>
-            <ion-button
-                color="secondary"
-                hx-get="{% url 'loyalty:member_redeem' pk=member.pk %}"
-                hx-target="#main-content-area"
-                hx-push-url="true">
-                <ion-icon slot="start" name="gift"></ion-icon>
-                {% trans "Redeem" %}
-            </ion-button>
-            <ion-button
-                fill="outline"
-                hx-get="{% url 'loyalty:member_edit' pk=member.pk %}"
-                hx-target="#main-content-area"
-                hx-push-url="true">
-                <ion-icon slot="start" name="create"></ion-icon>
-                {% trans "Edit" %}
-            </ion-button>
-        </div>
-    </div>
+    {% fill "header_actions" %}
+        {% if member.tier %}
+        <ion-badge style="--background: {{ member.tier.color }};">
+            {{ member.tier.name }}
+        </ion-badge>
+        {% endif %}
+        {% if not member.is_active %}
+        <ion-badge color="danger">{% trans "Inactive" %}</ion-badge>
+        {% endif %}
+        <ion-button
+            color="success"
+            hx-get="{% url 'loyalty:member_add_points' pk=member.pk %}"
+            hx-target="#main-content-area"
+            hx-push-url="true">
+            <ion-icon slot="start" name="add"></ion-icon>
+            {% trans "Add Points" %}
+        </ion-button>
+        <ion-button
+            color="secondary"
+            hx-get="{% url 'loyalty:member_redeem' pk=member.pk %}"
+            hx-target="#main-content-area"
+            hx-push-url="true">
+            <ion-icon slot="start" name="gift"></ion-icon>
+            {% trans "Redeem" %}
+        </ion-button>
+        <ion-button
+            fill="outline"
+            hx-get="{% url 'loyalty:member_edit' pk=member.pk %}"
+            hx-target="#main-content-area"
+            hx-push-url="true">
+            <ion-icon slot="start" name="create"></ion-icon>
+            {% trans "Edit" %}
+        </ion-button>
+    {% endfill %}
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Member Info -->
-        <ion-card>
-            <ion-card-header>
-                <ion-card-title>{% trans "Member Info" %}</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-                <ion-list>
-                    {% if member.card_number %}
-                    <ion-item>
-                        <ion-icon slot="start" name="card-outline"></ion-icon>
-                        <ion-label>
-                            <p>{% trans "Card Number" %}</p>
-                            <h3>{{ member.card_number }}</h3>
-                        </ion-label>
-                    </ion-item>
-                    {% endif %}
-                    {% if member.email %}
-                    <ion-item>
-                        <ion-icon slot="start" name="mail-outline"></ion-icon>
-                        <ion-label>
-                            <p>{% trans "Email" %}</p>
-                            <h3>{{ member.email }}</h3>
-                        </ion-label>
-                    </ion-item>
-                    {% endif %}
-                    {% if member.phone %}
-                    <ion-item>
-                        <ion-icon slot="start" name="call-outline"></ion-icon>
-                        <ion-label>
-                            <p>{% trans "Phone" %}</p>
-                            <h3>{{ member.phone }}</h3>
-                        </ion-label>
-                    </ion-item>
-                    {% endif %}
-                    <ion-item>
-                        <ion-icon slot="start" name="calendar-outline"></ion-icon>
-                        <ion-label>
-                            <p>{% trans "Enrolled" %}</p>
-                            <h3>{{ member.enrolled_at|date:"d M Y" }}</h3>
-                        </ion-label>
-                    </ion-item>
-                    {% if member.last_activity_at %}
-                    <ion-item>
-                        <ion-icon slot="start" name="time-outline"></ion-icon>
-                        <ion-label>
-                            <p>{% trans "Last Activity" %}</p>
-                            <h3>{{ member.last_activity_at|date:"d M Y H:i" }}</h3>
-                        </ion-label>
-                    </ion-item>
-                    {% endif %}
-                </ion-list>
-            </ion-card-content>
-        </ion-card>
+    {% fill "content" %}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Member Info -->
+            <ion-card>
+                <ion-card-header>
+                    <ion-card-title>{% trans "Member Info" %}</ion-card-title>
+                </ion-card-header>
+                <ion-card-content>
+                    <ion-list>
+                        {% if member.card_number %}
+                        <ion-item>
+                            <ion-icon slot="start" name="card-outline"></ion-icon>
+                            <ion-label>
+                                <p>{% trans "Card Number" %}</p>
+                                <h3>{{ member.card_number }}</h3>
+                            </ion-label>
+                        </ion-item>
+                        {% endif %}
+                        {% if member.email %}
+                        <ion-item>
+                            <ion-icon slot="start" name="mail-outline"></ion-icon>
+                            <ion-label>
+                                <p>{% trans "Email" %}</p>
+                                <h3>{{ member.email }}</h3>
+                            </ion-label>
+                        </ion-item>
+                        {% endif %}
+                        {% if member.phone %}
+                        <ion-item>
+                            <ion-icon slot="start" name="call-outline"></ion-icon>
+                            <ion-label>
+                                <p>{% trans "Phone" %}</p>
+                                <h3>{{ member.phone }}</h3>
+                            </ion-label>
+                        </ion-item>
+                        {% endif %}
+                        <ion-item>
+                            <ion-icon slot="start" name="calendar-outline"></ion-icon>
+                            <ion-label>
+                                <p>{% trans "Enrolled" %}</p>
+                                <h3>{{ member.enrolled_at|date:"d M Y" }}</h3>
+                            </ion-label>
+                        </ion-item>
+                        {% if member.last_activity_at %}
+                        <ion-item>
+                            <ion-icon slot="start" name="time-outline"></ion-icon>
+                            <ion-label>
+                                <p>{% trans "Last Activity" %}</p>
+                                <h3>{{ member.last_activity_at|date:"d M Y H:i" }}</h3>
+                            </ion-label>
+                        </ion-item>
+                        {% endif %}
+                    </ion-list>
+                </ion-card-content>
+            </ion-card>
 
-        <!-- Points Summary -->
-        <ion-card>
-            <ion-card-header>
-                <ion-card-title>{% trans "Points Summary" %}</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-                <div class="text-center mb-6">
-                    <p class="text-sm text-gray-500">{% trans "Available Points" %}</p>
-                    <p class="text-4xl font-bold text-blue-600">{{ member.points_balance }}</p>
-                    <p class="text-sm text-gray-500">
-                        {% trans "Value" %}: {{ member.points_value|floatformat:2 }} €
-                    </p>
-                </div>
-                <ion-list>
-                    <ion-item>
-                        <ion-label>{% trans "Lifetime Points" %}</ion-label>
-                        <ion-note slot="end">{{ member.lifetime_points }}</ion-note>
-                    </ion-item>
-                    <ion-item>
-                        <ion-label>{% trans "Total Spent" %}</ion-label>
-                        <ion-note slot="end">{{ member.total_spent|floatformat:2 }} €</ion-note>
-                    </ion-item>
-                    <ion-item>
-                        <ion-label>{% trans "Visits" %}</ion-label>
-                        <ion-note slot="end">{{ member.visit_count }}</ion-note>
-                    </ion-item>
-                </ion-list>
-            </ion-card-content>
-        </ion-card>
-
-        <!-- Tier Benefits -->
-        <ion-card>
-            <ion-card-header>
-                <ion-card-title>{% trans "Tier Benefits" %}</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-                {% if member.tier %}
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background-color: {{ member.tier.color }}20;">
-                        <ion-icon name="{{ member.tier.icon }}" style="color: {{ member.tier.color }};" class="text-2xl"></ion-icon>
-                    </div>
-                    <div>
-                        <h3 class="font-bold" style="color: {{ member.tier.color }};">{{ member.tier.name }}</h3>
-                        <p class="text-sm text-gray-500">{{ member.tier.description }}</p>
-                    </div>
-                </div>
-                <ion-list>
-                    <ion-item>
-                        <ion-icon slot="start" name="star"></ion-icon>
-                        <ion-label>{% trans "Points Multiplier" %}</ion-label>
-                        <ion-note slot="end">{{ member.tier.points_multiplier }}x</ion-note>
-                    </ion-item>
-                    {% if member.tier.discount_percent > 0 %}
-                    <ion-item>
-                        <ion-icon slot="start" name="pricetag"></ion-icon>
-                        <ion-label>{% trans "Discount" %}</ion-label>
-                        <ion-note slot="end">{{ member.tier.discount_percent }}%</ion-note>
-                    </ion-item>
-                    {% endif %}
-                    {% if member.tier.free_shipping %}
-                    <ion-item>
-                        <ion-icon slot="start" name="checkmark-circle" class="text-green-500"></ion-icon>
-                        <ion-label>{% trans "Free Shipping" %}</ion-label>
-                    </ion-item>
-                    {% endif %}
-                    {% if member.tier.exclusive_offers %}
-                    <ion-item>
-                        <ion-icon slot="start" name="checkmark-circle" class="text-green-500"></ion-icon>
-                        <ion-label>{% trans "Exclusive Offers" %}</ion-label>
-                    </ion-item>
-                    {% endif %}
-                </ion-list>
-                {% else %}
-                <p class="text-gray-500 text-center py-4">{% trans "No tier assigned" %}</p>
-                {% endif %}
-            </ion-card-content>
-        </ion-card>
-    </div>
-
-    <!-- Transaction History -->
-    <ion-card class="mt-6">
-        <ion-card-header>
-            <ion-card-title>{% trans "Points History" %}</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-            <ion-list>
-                {% for tx in transactions %}
-                <ion-item>
-                    <ion-icon
-                        slot="start"
-                        name="{% if tx.points > 0 %}add-circle{% else %}remove-circle{% endif %}"
-                        class="{% if tx.points > 0 %}text-green-500{% else %}text-red-500{% endif %}">
-                    </ion-icon>
-                    <ion-label>
-                        <h3>{{ tx.get_transaction_type_display }}</h3>
-                        <p>{{ tx.description }}</p>
-                        <p class="text-xs text-gray-400">{{ tx.created_at|date:"d M Y H:i" }}</p>
-                    </ion-label>
-                    <div slot="end" class="text-right">
-                        <p class="text-lg font-bold {% if tx.points > 0 %}text-green-600{% else %}text-red-600{% endif %}">
-                            {% if tx.points > 0 %}+{% endif %}{{ tx.points }}
+            <!-- Points Summary -->
+            <ion-card>
+                <ion-card-header>
+                    <ion-card-title>{% trans "Points Summary" %}</ion-card-title>
+                </ion-card-header>
+                <ion-card-content>
+                    <div class="text-center mb-6">
+                        <p class="text-sm text-gray-500">{% trans "Available Points" %}</p>
+                        <p class="text-4xl font-bold text-blue-600">{{ member.points_balance }}</p>
+                        <p class="text-sm text-gray-500">
+                            {% trans "Value" %}: {{ member.points_value|floatformat:2 }} €
                         </p>
-                        <p class="text-xs text-gray-500">{% trans "Balance" %}: {{ tx.balance_after }}</p>
                     </div>
-                </ion-item>
-                {% empty %}
-                <ion-item>
-                    <ion-label class="text-center text-gray-500 py-4">
-                        {% trans "No transactions yet" %}
-                    </ion-label>
-                </ion-item>
-                {% endfor %}
-            </ion-list>
-        </ion-card-content>
-    </ion-card>
-</ion-content>
+                    <ion-list>
+                        <ion-item>
+                            <ion-label>{% trans "Lifetime Points" %}</ion-label>
+                            <ion-note slot="end">{{ member.lifetime_points }}</ion-note>
+                        </ion-item>
+                        <ion-item>
+                            <ion-label>{% trans "Total Spent" %}</ion-label>
+                            <ion-note slot="end">{{ member.total_spent|floatformat:2 }} €</ion-note>
+                        </ion-item>
+                        <ion-item>
+                            <ion-label>{% trans "Visits" %}</ion-label>
+                            <ion-note slot="end">{{ member.visit_count }}</ion-note>
+                        </ion-item>
+                    </ion-list>
+                </ion-card-content>
+            </ion-card>
+
+            <!-- Tier Benefits -->
+            <ion-card>
+                <ion-card-header>
+                    <ion-card-title>{% trans "Tier Benefits" %}</ion-card-title>
+                </ion-card-header>
+                <ion-card-content>
+                    {% if member.tier %}
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background-color: {{ member.tier.color }}20;">
+                            <ion-icon name="{{ member.tier.icon }}" style="color: {{ member.tier.color }};" class="text-2xl"></ion-icon>
+                        </div>
+                        <div>
+                            <h3 class="font-bold" style="color: {{ member.tier.color }};">{{ member.tier.name }}</h3>
+                            <p class="text-sm text-gray-500">{{ member.tier.description }}</p>
+                        </div>
+                    </div>
+                    <ion-list>
+                        <ion-item>
+                            <ion-icon slot="start" name="star"></ion-icon>
+                            <ion-label>{% trans "Points Multiplier" %}</ion-label>
+                            <ion-note slot="end">{{ member.tier.points_multiplier }}x</ion-note>
+                        </ion-item>
+                        {% if member.tier.discount_percent > 0 %}
+                        <ion-item>
+                            <ion-icon slot="start" name="pricetag"></ion-icon>
+                            <ion-label>{% trans "Discount" %}</ion-label>
+                            <ion-note slot="end">{{ member.tier.discount_percent }}%</ion-note>
+                        </ion-item>
+                        {% endif %}
+                        {% if member.tier.free_shipping %}
+                        <ion-item>
+                            <ion-icon slot="start" name="checkmark-circle" class="text-green-500"></ion-icon>
+                            <ion-label>{% trans "Free Shipping" %}</ion-label>
+                        </ion-item>
+                        {% endif %}
+                        {% if member.tier.exclusive_offers %}
+                        <ion-item>
+                            <ion-icon slot="start" name="checkmark-circle" class="text-green-500"></ion-icon>
+                            <ion-label>{% trans "Exclusive Offers" %}</ion-label>
+                        </ion-item>
+                        {% endif %}
+                    </ion-list>
+                    {% else %}
+                    <p class="text-gray-500 text-center py-4">{% trans "No tier assigned" %}</p>
+                    {% endif %}
+                </ion-card-content>
+            </ion-card>
+        </div>
+
+        <!-- Transaction History -->
+        <ion-card class="mt-6">
+            <ion-card-header>
+                <ion-card-title>{% trans "Points History" %}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+                <ion-list>
+                    {% for tx in transactions %}
+                    <ion-item>
+                        <ion-icon
+                            slot="start"
+                            name="{% if tx.points > 0 %}add-circle{% else %}remove-circle{% endif %}"
+                            class="{% if tx.points > 0 %}text-green-500{% else %}text-red-500{% endif %}">
+                        </ion-icon>
+                        <ion-label>
+                            <h3>{{ tx.get_transaction_type_display }}</h3>
+                            <p>{{ tx.description }}</p>
+                            <p class="text-xs text-gray-400">{{ tx.created_at|date:"d M Y H:i" }}</p>
+                        </ion-label>
+                        <div slot="end" class="text-right">
+                            <p class="text-lg font-bold {% if tx.points > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                {% if tx.points > 0 %}+{% endif %}{{ tx.points }}
+                            </p>
+                            <p class="text-xs text-gray-500">{% trans "Balance" %}: {{ tx.balance_after }}</p>
+                        </div>
+                    </ion-item>
+                    {% empty %}
+                    <ion-item>
+                        <ion-label class="text-center text-gray-500 py-4">
+                            {% trans "No transactions yet" %}
+                        </ion-label>
+                    </ion-item>
+                    {% endfor %}
+                </ion-list>
+            </ion-card-content>
+        </ion-card>
+    {% endfill %}
+{% endcomponent %}

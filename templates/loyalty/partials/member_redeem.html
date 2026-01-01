@@ -1,81 +1,71 @@
 {% load i18n component_tags %}
 
-{% if request.htmx %}
-{% component "tabbar" module_id="loyalty" current_view="members" oob=True %}
-{% endif %}
+{% component "page"
+    title=_("Redeem Reward")
+    subtitle=member.name|add:" - "|add:member.points_balance|add:" "|add:_("points available")
+    module_id="loyalty"
+    tabbar_view="members"
+    back_url="loyalty:member_detail"
+    back_url_pk=member.pk %}
 
-<ion-content class="ion-padding">
-    <!-- Header -->
-    <div class="flex items-center gap-4 mb-6">
-        <ion-button
-            fill="clear"
-            hx-get="{% url 'loyalty:member_detail' pk=member.pk %}"
-            hx-target="#main-content-area"
-            hx-push-url="true">
-            <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
-        </ion-button>
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">{% trans "Redeem Reward" %}</h1>
-            <p class="text-gray-500">{{ member.name }} - {{ member.points_balance }} {% trans "points available" %}</p>
-        </div>
-    </div>
-
-    <!-- Available Rewards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {% for item in available_rewards %}
-        <ion-card class="{% if not item.can_redeem %}opacity-50{% endif %}">
-            <ion-card-header>
-                <div class="flex items-center gap-3">
-                    <div class="p-3 bg-purple-100 rounded-full">
-                        <ion-icon name="{{ item.reward.icon }}" class="text-2xl text-purple-600"></ion-icon>
+    {% fill "content" %}
+        <!-- Available Rewards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for item in available_rewards %}
+            <ion-card class="{% if not item.can_redeem %}opacity-50{% endif %}">
+                <ion-card-header>
+                    <div class="flex items-center gap-3">
+                        <div class="p-3 bg-purple-100 rounded-full">
+                            <ion-icon name="{{ item.reward.icon }}" class="text-2xl text-purple-600"></ion-icon>
+                        </div>
+                        <div>
+                            <ion-card-title>{{ item.reward.name }}</ion-card-title>
+                            <ion-card-subtitle>{{ item.reward.points_cost }} {% trans "points" %}</ion-card-subtitle>
+                        </div>
                     </div>
-                    <div>
-                        <ion-card-title>{{ item.reward.name }}</ion-card-title>
-                        <ion-card-subtitle>{{ item.reward.points_cost }} {% trans "points" %}</ion-card-subtitle>
+                </ion-card-header>
+                <ion-card-content>
+                    <p class="text-gray-600 mb-3">{{ item.reward.description }}</p>
+
+                    <div class="mb-3">
+                        <ion-badge color="{% if item.reward.reward_type == 'discount_percent' %}success{% elif item.reward.reward_type == 'discount_amount' %}primary{% else %}tertiary{% endif %}">
+                            {% if item.reward.reward_type == 'discount_percent' %}
+                                {{ item.reward.value }}% {% trans "off" %}
+                            {% elif item.reward.reward_type == 'discount_amount' %}
+                                {{ item.reward.value }}€ {% trans "off" %}
+                            {% elif item.reward.reward_type == 'free_product' %}
+                                {% trans "Free" %}: {{ item.reward.product_name }}
+                            {% else %}
+                                {{ item.reward.get_reward_type_display }}
+                            {% endif %}
+                        </ion-badge>
                     </div>
-                </div>
-            </ion-card-header>
-            <ion-card-content>
-                <p class="text-gray-600 mb-3">{{ item.reward.description }}</p>
 
-                <div class="mb-3">
-                    <ion-badge color="{% if item.reward.reward_type == 'discount_percent' %}success{% elif item.reward.reward_type == 'discount_amount' %}primary{% else %}tertiary{% endif %}">
-                        {% if item.reward.reward_type == 'discount_percent' %}
-                            {{ item.reward.value }}% {% trans "off" %}
-                        {% elif item.reward.reward_type == 'discount_amount' %}
-                            {{ item.reward.value }}€ {% trans "off" %}
-                        {% elif item.reward.reward_type == 'free_product' %}
-                            {% trans "Free" %}: {{ item.reward.product_name }}
-                        {% else %}
-                            {{ item.reward.get_reward_type_display }}
-                        {% endif %}
-                    </ion-badge>
-                </div>
-
-                {% if item.can_redeem %}
-                <form
-                    method="post"
-                    hx-post="{% url 'loyalty:member_redeem' pk=member.pk %}"
-                    hx-target="#main-content-area">
-                    {% csrf_token %}
-                    <input type="hidden" name="reward_id" value="{{ item.reward.pk }}">
-                    <ion-button expand="block" color="success" type="submit">
-                        <ion-icon slot="start" name="gift"></ion-icon>
-                        {% trans "Redeem" %}
+                    {% if item.can_redeem %}
+                    <form
+                        method="post"
+                        hx-post="{% url 'loyalty:member_redeem' pk=member.pk %}"
+                        hx-target="#main-content-area">
+                        {% csrf_token %}
+                        <input type="hidden" name="reward_id" value="{{ item.reward.pk }}">
+                        <ion-button expand="block" color="success" type="submit">
+                            <ion-icon slot="start" name="gift"></ion-icon>
+                            {% trans "Redeem" %}
+                        </ion-button>
+                    </form>
+                    {% else %}
+                    <ion-button expand="block" color="medium" disabled>
+                        {{ item.reason }}
                     </ion-button>
-                </form>
-                {% else %}
-                <ion-button expand="block" color="medium" disabled>
-                    {{ item.reason }}
-                </ion-button>
-                {% endif %}
-            </ion-card-content>
-        </ion-card>
-        {% empty %}
-        <div class="col-span-full text-center py-8">
-            <ion-icon name="gift-outline" class="text-6xl text-gray-300 mb-4"></ion-icon>
-            <p class="text-gray-500">{% trans "No rewards available" %}</p>
+                    {% endif %}
+                </ion-card-content>
+            </ion-card>
+            {% empty %}
+            <div class="col-span-full text-center py-8">
+                <ion-icon name="gift-outline" class="text-6xl text-gray-300 mb-4"></ion-icon>
+                <p class="text-gray-500">{% trans "No rewards available" %}</p>
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-</ion-content>
+    {% endfill %}
+{% endcomponent %}
