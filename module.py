@@ -13,6 +13,15 @@ MODULE_ICON = "heart-outline"
 MODULE_VERSION = "1.0.0"
 MODULE_CATEGORY = "crm"
 
+# Target Industries (business verticals this module is designed for)
+MODULE_INDUSTRIES = [
+    "retail",    # Retail stores
+    "restaurant",# Restaurants
+    "cafe",      # Cafes & bakeries
+    "salon",     # Beauty & wellness
+    "fitness",   # Fitness & sports
+]
+
 # Sidebar Menu Configuration
 MENU = {
     "label": _("Loyalty"),
