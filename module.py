@@ -18,7 +18,7 @@ MODULE_INDUSTRIES = [
     "retail",    # Retail stores
     "restaurant",# Restaurants
     "cafe",      # Cafes & bakeries
-    "salon",     # Beauty & wellness
+    "beauty",    # Beauty & wellness
     "fitness",   # Fitness & sports
 ]
 
