@@ -24,7 +24,9 @@
 
 {% component "settings_page"
     title=_("Loyalty Program Settings")
-    subtitle=_("Configure your loyalty program") %}
+    subtitle=_("Configure your loyalty program")
+    module_id="loyalty"
+    tabbar_view="settings" %}
 
     {% fill "settings" %}
         {% csrf_token %}

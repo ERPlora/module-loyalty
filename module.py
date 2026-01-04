@@ -81,19 +81,50 @@ SETTINGS = {
 }
 
 # Permissions
+# Format: (action_suffix, display_name) -> becomes "loyalty.action_suffix"
 PERMISSIONS = [
-    "loyalty.view_loyaltymember",
-    "loyalty.add_loyaltymember",
-    "loyalty.change_loyaltymember",
-    "loyalty.delete_loyaltymember",
-    "loyalty.view_loyaltytier",
-    "loyalty.add_loyaltytier",
-    "loyalty.change_loyaltytier",
-    "loyalty.delete_loyaltytier",
-    "loyalty.view_reward",
-    "loyalty.add_reward",
-    "loyalty.change_reward",
-    "loyalty.delete_reward",
-    "loyalty.view_pointstransaction",
-    "loyalty.redeem_points",
+    ("view_member", _("Can view loyalty members")),
+    ("add_member", _("Can add loyalty members")),
+    ("change_member", _("Can edit loyalty members")),
+    ("delete_member", _("Can delete loyalty members")),
+    ("view_tier", _("Can view loyalty tiers")),
+    ("add_tier", _("Can add loyalty tiers")),
+    ("change_tier", _("Can edit loyalty tiers")),
+    ("delete_tier", _("Can delete loyalty tiers")),
+    ("view_reward", _("Can view rewards")),
+    ("add_reward", _("Can add rewards")),
+    ("change_reward", _("Can edit rewards")),
+    ("delete_reward", _("Can delete rewards")),
+    ("view_transaction", _("Can view points transactions")),
+    ("redeem_points", _("Can redeem points")),
+    ("adjust_points", _("Can manually adjust points")),
 ]
+
+# Role Permissions - Default permissions for each system role in this module
+# Keys are role names, values are lists of permission suffixes (without module prefix)
+# Use ["*"] to grant all permissions in this module
+ROLE_PERMISSIONS = {
+    "admin": ["*"],  # Full access to all loyalty permissions
+    "manager": [
+        "view_member",
+        "add_member",
+        "change_member",
+        "view_tier",
+        "add_tier",
+        "change_tier",
+        "view_reward",
+        "add_reward",
+        "change_reward",
+        "view_transaction",
+        "redeem_points",
+        "adjust_points",
+    ],
+    "employee": [
+        "view_member",
+        "add_member",
+        "view_tier",
+        "view_reward",
+        "view_transaction",
+        "redeem_points",
+    ],
+}
