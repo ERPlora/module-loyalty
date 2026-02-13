@@ -1,110 +1,109 @@
-{% load i18n component_tags %}
+{% load i18n djicons %}
 
-{% component "page"
-    title=_("Rewards")
-    subtitle=_("Manage redeemable rewards")
-    module_id="loyalty"
-    tabbar_view="rewards" %}
+<div class="p-4">
+    <div class="mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold">{% trans "Rewards" %}</h1>
+                <p class="text-sm mt-2 text-muted">{% trans "Manage redeemable rewards for members" %}</p>
+            </div>
+            <button class="btn color-primary"
+                hx-get="{% url 'loyalty:reward_create' %}"
+                hx-target="#main-content-area"
+                hx-push-url="true">
+                {% icon "add-outline" css_class="mr-1" %}
+                {% trans "Add Reward" %}
+            </button>
+        </div>
+    </div>
 
-    {% fill "header_actions" %}
-        <ion-segment value="{{ status }}">
-            <ion-segment-button
-                value="active"
-                hx-get="{% url 'loyalty:rewards_list' %}?status=active"
-                hx-target="#main-content-area"
-                hx-push-url="true">
-                <ion-label>{% trans "Active" %}</ion-label>
-            </ion-segment-button>
-            <ion-segment-button
-                value="inactive"
-                hx-get="{% url 'loyalty:rewards_list' %}?status=inactive"
-                hx-target="#main-content-area"
-                hx-push-url="true">
-                <ion-label>{% trans "Inactive" %}</ion-label>
-            </ion-segment-button>
-            <ion-segment-button
-                value=""
-                hx-get="{% url 'loyalty:rewards_list' %}?status="
-                hx-target="#main-content-area"
-                hx-push-url="true">
-                <ion-label>{% trans "All" %}</ion-label>
-            </ion-segment-button>
-        </ion-segment>
-        <ion-button
-            hx-get="{% url 'loyalty:reward_create' %}"
+    <!-- Status Filters -->
+    <div class="flex items-center gap-2 mb-4">
+        <button class="btn btn-sm {% if status == 'active' %}color-primary{% else %}btn-outline{% endif %}"
+            hx-get="{% url 'loyalty:rewards_list' %}?status=active"
             hx-target="#main-content-area"
             hx-push-url="true">
-            <ion-icon slot="start" name="add"></ion-icon>
-            {% trans "Add Reward" %}
-        </ion-button>
-    {% endfill %}
+            {% trans "Active" %}
+        </button>
+        <button class="btn btn-sm {% if status == 'inactive' %}color-primary{% else %}btn-outline{% endif %}"
+            hx-get="{% url 'loyalty:rewards_list' %}?status=inactive"
+            hx-target="#main-content-area"
+            hx-push-url="true">
+            {% trans "Inactive" %}
+        </button>
+        <button class="btn btn-sm {% if not status or status == '' %}color-primary{% else %}btn-outline{% endif %}"
+            hx-get="{% url 'loyalty:rewards_list' %}?status="
+            hx-target="#main-content-area"
+            hx-push-url="true">
+            {% trans "All" %}
+        </button>
+    </div>
 
-    {% fill "content" %}
-        <!-- Rewards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {% for reward in rewards %}
-            <ion-card
-                button
-                class="{% if not reward.is_active %}opacity-50{% endif %}"
-                hx-get="{% url 'loyalty:reward_detail' pk=reward.pk %}"
+    {% if rewards %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for reward in rewards %}
+        <a hx-get="{% url 'loyalty:reward_detail' pk=reward.pk %}"
+           hx-target="#main-content-area"
+           hx-push-url="true"
+           class="card card--clickable {% if not reward.is_active %}opacity-50{% endif %}">
+            <div class="card-header">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        {% if reward.image %}
+                        <img src="{{ reward.image.url }}" alt="{{ reward.name }}" class="w-12 h-12 rounded-lg object-cover">
+                        {% else %}
+                        <div class="w-12 h-12 bg-warning/10 rounded-xl flex items-center justify-center">
+                            {% icon reward.icon css_class="text-2xl text-warning" %}
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h3 class="font-semibold">{{ reward.name }}</h3>
+                            <p class="text-sm text-primary font-bold">{{ reward.points_cost }} {% trans "points" %}</p>
+                        </div>
+                    </div>
+                    {% if reward.is_featured %}
+                    <span class="badge badge-sm color-warning">{% icon "star" %}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                {% if reward.description %}
+                <p class="text-muted text-sm mb-3 line-clamp-2">{{ reward.description }}</p>
+                {% endif %}
+                <div class="flex items-center justify-between">
+                    <span class="badge badge-sm {% if reward.reward_type == 'discount_percent' %}color-success{% elif reward.reward_type == 'discount_amount' %}color-primary{% else %}{% endif %}">
+                        {% if reward.reward_type == 'discount_percent' %}
+                            {{ reward.value }}% {% trans "off" %}
+                        {% elif reward.reward_type == 'discount_amount' %}
+                            {{ reward.value }} {% trans "off" %}
+                        {% elif reward.reward_type == 'free_product' %}
+                            {% trans "Free Product" %}
+                        {% elif reward.reward_type == 'free_shipping' %}
+                            {% trans "Free Shipping" %}
+                        {% else %}
+                            {{ reward.get_reward_type_display }}
+                        {% endif %}
+                    </span>
+                    <span class="text-xs text-muted">{{ reward.times_redeemed }}x {% trans "redeemed" %}</span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-12 text-muted">
+            {% icon "gift-outline" css_class="text-5xl block mx-auto mb-2" %}
+            <p class="text-lg">{% trans "No rewards found" %}</p>
+            <p class="text-sm mt-1">{% trans "Create rewards that members can redeem with their points" %}</p>
+            <button class="btn color-primary mt-4"
+                hx-get="{% url 'loyalty:reward_create' %}"
                 hx-target="#main-content-area"
                 hx-push-url="true">
-                <ion-card-header>
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            {% if reward.image %}
-                            <img src="{{ reward.image.url }}" alt="{{ reward.name }}" class="w-12 h-12 rounded object-cover">
-                            {% else %}
-                            <div class="p-3 bg-purple-100 rounded-full">
-                                <ion-icon name="{{ reward.icon }}" class="text-2xl text-purple-600"></ion-icon>
-                            </div>
-                            {% endif %}
-                            <div>
-                                <ion-card-title>{{ reward.name }}</ion-card-title>
-                                <ion-card-subtitle>{{ reward.points_cost }} {% trans "points" %}</ion-card-subtitle>
-                            </div>
-                        </div>
-                        {% if reward.is_featured %}
-                        <ion-badge color="warning">
-                            <ion-icon name="star"></ion-icon>
-                        </ion-badge>
-                        {% endif %}
-                    </div>
-                </ion-card-header>
-                <ion-card-content>
-                    <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ reward.description }}</p>
-
-                    <div class="flex items-center justify-between">
-                        <ion-badge color="{% if reward.reward_type == 'discount_percent' %}success{% elif reward.reward_type == 'discount_amount' %}primary{% else %}tertiary{% endif %}">
-                            {% if reward.reward_type == 'discount_percent' %}
-                                {{ reward.value }}% {% trans "off" %}
-                            {% elif reward.reward_type == 'discount_amount' %}
-                                {{ reward.value }}€ {% trans "off" %}
-                            {% elif reward.reward_type == 'free_product' %}
-                                {% trans "Free Product" %}
-                            {% else %}
-                                {{ reward.get_reward_type_display }}
-                            {% endif %}
-                        </ion-badge>
-                        <span class="text-sm text-gray-500">
-                            {{ reward.times_redeemed }}x {% trans "redeemed" %}
-                        </span>
-                    </div>
-                </ion-card-content>
-            </ion-card>
-            {% empty %}
-            <div class="col-span-full text-center py-8">
-                <ion-icon name="gift-outline" class="text-6xl text-gray-300 mb-4"></ion-icon>
-                <p class="text-gray-500">{% trans "No rewards found" %}</p>
-                <ion-button
-                    class="mt-4"
-                    hx-get="{% url 'loyalty:reward_create' %}"
-                    hx-target="#main-content-area"
-                    hx-push-url="true">
-                    {% trans "Create First Reward" %}
-                </ion-button>
-            </div>
-            {% endfor %}
+                {% icon "add-outline" css_class="mr-1" %}
+                {% trans "Create First Reward" %}
+            </button>
         </div>
-    {% endfill %}
-{% endcomponent %}
+    </div>
+    {% endif %}
+</div>

@@ -1,71 +1,93 @@
-{% load i18n component_tags %}
+{% load i18n djicons %}
 
-{% component "page"
-    title=_("Redeem Reward")
-    subtitle=member.name|add:" - "|add:member.points_balance|add:" "|add:_("points available")
-    module_id="loyalty"
-    tabbar_view="members"
-    back_url="loyalty:member_detail"
-    back_url_pk=member.pk %}
+<div class="p-4">
+    <button class="btn btn-ghost btn-sm mb-4"
+        hx-get="{% url 'loyalty:member_detail' pk=member.pk %}"
+        hx-target="#main-content-area"
+        hx-push-url="true">
+        {% icon "arrow-back-outline" css_class="mr-1" %}
+        {% trans "Back to Member" %}
+    </button>
 
-    {% fill "content" %}
-        <!-- Available Rewards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {% for item in available_rewards %}
-            <ion-card class="{% if not item.can_redeem %}opacity-50{% endif %}">
-                <ion-card-header>
-                    <div class="flex items-center gap-3">
-                        <div class="p-3 bg-purple-100 rounded-full">
-                            <ion-icon name="{{ item.reward.icon }}" class="text-2xl text-purple-600"></ion-icon>
-                        </div>
-                        <div>
-                            <ion-card-title>{{ item.reward.name }}</ion-card-title>
-                            <ion-card-subtitle>{{ item.reward.points_cost }} {% trans "points" %}</ion-card-subtitle>
-                        </div>
-                    </div>
-                </ion-card-header>
-                <ion-card-content>
-                    <p class="text-gray-600 mb-3">{{ item.reward.description }}</p>
-
-                    <div class="mb-3">
-                        <ion-badge color="{% if item.reward.reward_type == 'discount_percent' %}success{% elif item.reward.reward_type == 'discount_amount' %}primary{% else %}tertiary{% endif %}">
-                            {% if item.reward.reward_type == 'discount_percent' %}
-                                {{ item.reward.value }}% {% trans "off" %}
-                            {% elif item.reward.reward_type == 'discount_amount' %}
-                                {{ item.reward.value }}€ {% trans "off" %}
-                            {% elif item.reward.reward_type == 'free_product' %}
-                                {% trans "Free" %}: {{ item.reward.product_name }}
-                            {% else %}
-                                {{ item.reward.get_reward_type_display }}
-                            {% endif %}
-                        </ion-badge>
-                    </div>
-
-                    {% if item.can_redeem %}
-                    <form
-                        method="post"
-                        hx-post="{% url 'loyalty:member_redeem' pk=member.pk %}"
-                        hx-target="#main-content-area">
-                        {% csrf_token %}
-                        <input type="hidden" name="reward_id" value="{{ item.reward.pk }}">
-                        <ion-button expand="block" color="success" type="submit">
-                            <ion-icon slot="start" name="gift"></ion-icon>
-                            {% trans "Redeem" %}
-                        </ion-button>
-                    </form>
-                    {% else %}
-                    <ion-button expand="block" color="medium" disabled>
-                        {{ item.reason }}
-                    </ion-button>
-                    {% endif %}
-                </ion-card-content>
-            </ion-card>
-            {% empty %}
-            <div class="col-span-full text-center py-8">
-                <ion-icon name="gift-outline" class="text-6xl text-gray-300 mb-4"></ion-icon>
-                <p class="text-gray-500">{% trans "No rewards available" %}</p>
+    <div class="mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold">{% trans "Redeem Reward" %}</h1>
+                <p class="text-sm mt-2 text-muted">{{ member.name }}</p>
             </div>
-            {% endfor %}
+            <div class="card inline-block">
+                <div class="card-body py-2 px-4">
+                    <div class="text-xs text-muted">{% trans "Available Points" %}</div>
+                    <div class="text-2xl font-bold text-primary">{{ member.points_balance }}</div>
+                </div>
+            </div>
         </div>
-    {% endfill %}
-{% endcomponent %}
+    </div>
+
+    {% if available_rewards %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for item in available_rewards %}
+        <div class="card {% if not item.can_redeem %}opacity-50{% endif %}">
+            <div class="card-header">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-warning/10 rounded-xl flex items-center justify-center">
+                        {% icon item.reward.icon css_class="text-xl text-warning" %}
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">{{ item.reward.name }}</h3>
+                        <p class="text-sm text-primary font-bold">{{ item.reward.points_cost }} {% trans "points" %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if item.reward.description %}
+                <p class="text-muted text-sm mb-3">{{ item.reward.description }}</p>
+                {% endif %}
+
+                <div class="mb-3">
+                    <span class="badge badge-sm {% if item.reward.reward_type == 'discount_percent' %}color-success{% elif item.reward.reward_type == 'discount_amount' %}color-primary{% else %}{% endif %}">
+                        {% if item.reward.reward_type == 'discount_percent' %}
+                            {{ item.reward.value }}% {% trans "off" %}
+                        {% elif item.reward.reward_type == 'discount_amount' %}
+                            {{ item.reward.value }} {% trans "off" %}
+                        {% elif item.reward.reward_type == 'free_product' %}
+                            {% trans "Free" %}: {{ item.reward.product_name }}
+                        {% elif item.reward.reward_type == 'free_shipping' %}
+                            {% trans "Free Shipping" %}
+                        {% else %}
+                            {{ item.reward.get_reward_type_display }}
+                        {% endif %}
+                    </span>
+                </div>
+
+                {% if item.can_redeem %}
+                <form method="post"
+                    hx-post="{% url 'loyalty:member_redeem' pk=member.pk %}"
+                    hx-target="#main-content-area"
+                    hx-confirm="{% trans 'Redeem this reward for' %} {{ item.reward.points_cost }} {% trans 'points?' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="reward_id" value="{{ item.reward.pk }}">
+                    <button type="submit" class="btn color-success w-full">
+                        {% icon "gift-outline" css_class="mr-1" %}
+                        {% trans "Redeem" %}
+                    </button>
+                </form>
+                {% else %}
+                <button class="btn btn-outline w-full" disabled>
+                    {{ item.reason }}
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-12 text-muted">
+            {% icon "gift-outline" css_class="text-5xl block mx-auto mb-2" %}
+            <p class="text-lg">{% trans "No rewards available" %}</p>
+            <p class="text-sm mt-1">{% trans "Create rewards in the Rewards section to allow redemptions" %}</p>
+        </div>
+    </div>
+    {% endif %}
+</div>

@@ -1,9 +1,6 @@
-{% extends "ui/app_base.html" %}
-{% load static %}
+{% extends "module_base.html" %}
 {% load i18n %}
 
-{% block page_title %}{% trans "Points History" %}{% endblock %}
-
-{% block page_content %}
+{% block module_content %}
 {% include "loyalty/partials/transactions_list.html" %}
 {% endblock %}

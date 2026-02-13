@@ -1,211 +1,173 @@
-{% load i18n component_tags %}
+{% load i18n djicons %}
 
-{% if is_create %}
-{% component "page"
-    title=_("Add Tier")
-    module_id="loyalty"
-    tabbar_view="tiers"
-    back_url="loyalty:tiers_list" %}
-{% else %}
-{% component "page"
-    title=_("Edit Tier")
-    module_id="loyalty"
-    tabbar_view="tiers"
-    back_url="loyalty:tiers_list" %}
-{% endif %}
+<div class="p-4">
+    <button class="btn btn-ghost btn-sm mb-4"
+        hx-get="{% url 'loyalty:tiers_list' %}"
+        hx-target="#main-content-area"
+        hx-push-url="true">
+        {% icon "arrow-back-outline" css_class="mr-1" %}
+        {% trans "Back to Tiers" %}
+    </button>
 
-    {% fill "content" %}
-        <ion-card>
-            <ion-card-content>
-                <form
-                    method="post"
-                    hx-post="{% if is_create %}{% url 'loyalty:tier_create' %}{% else %}{% url 'loyalty:tier_edit' pk=tier.pk %}{% endif %}"
-                    hx-target="#main-content-area">
-                    {% csrf_token %}
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold">{% if is_create %}{% trans "Add Tier" %}{% else %}{% trans "Edit Tier" %}{% endif %}</h1>
+    </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Name -->
-                        <div>
-                            <ion-label class="text-sm text-gray-600">{% trans "Name" %} *</ion-label>
-                            <ion-input
-                                name="name"
-                                value="{% if is_create %}{{ form_data.name|default:'' }}{% else %}{{ tier.name }}{% endif %}"
-                                required
-                                placeholder="{% trans 'e.g., Bronze, Silver, Gold' %}"
-                                class="mt-1">
-                            </ion-input>
-                        </div>
+    {% if form.errors %}
+    <div class="card mb-4" style="border-left: 4px solid var(--color-error);">
+        <div class="card-body">
+            <div class="flex items-center gap-2 mb-2">
+                {% icon "alert-circle-outline" css_class="text-error text-xl" %}
+                <span class="font-semibold text-error">{% trans "Please correct the errors below" %}</span>
+            </div>
+            {% for field, errors in form.errors.items %}
+            <p class="text-sm text-error ml-7">{{ field }}: {{ errors.0 }}</p>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 
-                        <!-- Name ES -->
-                        <div>
-                            <ion-label class="text-sm text-gray-600">{% trans "Name (Spanish)" %}</ion-label>
-                            <ion-input
-                                name="name_es"
-                                value="{% if is_create %}{{ form_data.name_es|default:'' }}{% else %}{{ tier.name_es }}{% endif %}"
-                                placeholder="{% trans 'e.g., Bronce, Plata, Oro' %}"
-                                class="mt-1">
-                            </ion-input>
-                        </div>
+    <form method="post"
+        hx-post="{% if is_create %}{% url 'loyalty:tier_create' %}{% else %}{% url 'loyalty:tier_edit' pk=tier.pk %}{% endif %}"
+        hx-target="#main-content-area"
+        class="space-y-4">
+        {% csrf_token %}
 
-                        <!-- Icon -->
-                        <div>
-                            <ion-label class="text-sm text-gray-600">{% trans "Icon" %}</ion-label>
-                            <ion-select
-                                name="icon"
-                                value="{% if is_create %}{{ form_data.icon|default:'star-outline' }}{% else %}{{ tier.icon }}{% endif %}"
-                                interface="popover"
-                                class="mt-1">
-                                <ion-select-option value="star-outline">Star</ion-select-option>
-                                <ion-select-option value="diamond-outline">Diamond</ion-select-option>
-                                <ion-select-option value="trophy-outline">Trophy</ion-select-option>
-                                <ion-select-option value="ribbon-outline">Ribbon</ion-select-option>
-                                <ion-select-option value="medal-outline">Medal</ion-select-option>
-                                <ion-select-option value="shield-outline">Shield</ion-select-option>
-                            </ion-select>
-                        </div>
-
-                        <!-- Color -->
-                        <div>
-                            <ion-label class="text-sm text-gray-600">{% trans "Color" %}</ion-label>
-                            <input
-                                type="color"
-                                name="color"
-                                value="{% if is_create %}{{ form_data.color|default:'#cd7f32' }}{% else %}{{ tier.color }}{% endif %}"
-                                class="mt-1 w-full h-10 rounded cursor-pointer">
-                        </div>
-
-                        <!-- Min Points -->
-                        <div>
-                            <ion-label class="text-sm text-gray-600">{% trans "Minimum Points" %}</ion-label>
-                            <ion-input
-                                name="min_points"
-                                type="number"
-                                min="0"
-                                value="{% if is_create %}{{ form_data.min_points|default:0 }}{% else %}{{ tier.min_points }}{% endif %}"
-                                class="mt-1">
-                            </ion-input>
-                        </div>
-
-                        <!-- Min Spent -->
-                        <div>
-                            <ion-label class="text-sm text-gray-600">{% trans "Minimum Spent" %}</ion-label>
-                            <ion-input
-                                name="min_spent"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value="{% if is_create %}{{ form_data.min_spent|default:'0.00' }}{% else %}{{ tier.min_spent }}{% endif %}"
-                                class="mt-1">
-                            </ion-input>
-                        </div>
-
-                        <!-- Points Multiplier -->
-                        <div>
-                            <ion-label class="text-sm text-gray-600">{% trans "Points Multiplier" %}</ion-label>
-                            <ion-input
-                                name="points_multiplier"
-                                type="number"
-                                min="1"
-                                step="0.01"
-                                value="{% if is_create %}{{ form_data.points_multiplier|default:'1.00' }}{% else %}{{ tier.points_multiplier }}{% endif %}"
-                                class="mt-1">
-                            </ion-input>
-                            <p class="text-xs text-gray-500 mt-1">{% trans "1.5 = 50% more points" %}</p>
-                        </div>
-
-                        <!-- Discount Percent -->
-                        <div>
-                            <ion-label class="text-sm text-gray-600">{% trans "Discount %" %}</ion-label>
-                            <ion-input
-                                name="discount_percent"
-                                type="number"
-                                min="0"
-                                max="100"
-                                step="0.01"
-                                value="{% if is_create %}{{ form_data.discount_percent|default:'0' }}{% else %}{{ tier.discount_percent }}{% endif %}"
-                                class="mt-1">
-                            </ion-input>
-                        </div>
-
-                        <!-- Order -->
-                        <div>
-                            <ion-label class="text-sm text-gray-600">{% trans "Display Order" %}</ion-label>
-                            <ion-input
-                                name="order"
-                                type="number"
-                                min="0"
-                                value="{% if is_create %}{{ form_data.order|default:0 }}{% else %}{{ tier.order }}{% endif %}"
-                                class="mt-1">
-                            </ion-input>
-                        </div>
-
-                        <!-- Description -->
-                        <div class="md:col-span-2">
-                            <ion-label class="text-sm text-gray-600">{% trans "Description" %}</ion-label>
-                            <ion-textarea
-                                name="description"
-                                rows="2"
-                                class="mt-1">{% if is_create %}{{ form_data.description|default:'' }}{% else %}{{ tier.description }}{% endif %}</ion-textarea>
-                        </div>
-
-                        <!-- Benefits -->
-                        <div class="md:col-span-2">
-                            <ion-label class="text-sm text-gray-600 mb-2 block">{% trans "Benefits" %}</ion-label>
-                            <div class="flex flex-wrap gap-4">
-                                <ion-item lines="none">
-                                    <ion-checkbox
-                                        name="free_shipping"
-                                        slot="start"
-                                        {% if is_create %}{% if form_data.free_shipping %}checked{% endif %}{% elif tier.free_shipping %}checked{% endif %}>
-                                    </ion-checkbox>
-                                    <ion-label>{% trans "Free Shipping" %}</ion-label>
-                                </ion-item>
-                                <ion-item lines="none">
-                                    <ion-checkbox
-                                        name="exclusive_offers"
-                                        slot="start"
-                                        {% if is_create %}{% if form_data.exclusive_offers %}checked{% endif %}{% elif tier.exclusive_offers %}checked{% endif %}>
-                                    </ion-checkbox>
-                                    <ion-label>{% trans "Exclusive Offers" %}</ion-label>
-                                </ion-item>
-                                <ion-item lines="none">
-                                    <ion-checkbox
-                                        name="is_default"
-                                        slot="start"
-                                        {% if is_create %}{% if form_data.is_default %}checked{% endif %}{% elif tier.is_default %}checked{% endif %}>
-                                    </ion-checkbox>
-                                    <ion-label>{% trans "Default for New Members" %}</ion-label>
-                                </ion-item>
-                                {% if not is_create %}
-                                <ion-item lines="none">
-                                    <ion-checkbox
-                                        name="is_active"
-                                        slot="start"
-                                        {% if tier.is_active %}checked{% endif %}>
-                                    </ion-checkbox>
-                                    <ion-label>{% trans "Active" %}</ion-label>
-                                </ion-item>
-                                {% endif %}
-                            </div>
-                        </div>
+        <!-- Basic Info -->
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">{% trans "Basic Information" %}</h3></div>
+            <div class="card-body space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Name" %} *</label>
+                        {{ form.name }}
                     </div>
-
-                    <div class="flex justify-end gap-3 mt-6">
-                        <ion-button
-                            fill="outline"
-                            color="medium"
-                            hx-get="{% url 'loyalty:tiers_list' %}"
-                            hx-target="#main-content-area"
-                            hx-push-url="true">
-                            {% trans "Cancel" %}
-                        </ion-button>
-                        <ion-button type="submit">
-                            <ion-icon slot="start" name="checkmark"></ion-icon>
-                            {% if is_create %}{% trans "Create Tier" %}{% else %}{% trans "Save Changes" %}{% endif %}
-                        </ion-button>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Name (Spanish)" %}</label>
+                        {{ form.name_es }}
                     </div>
-                </form>
-            </ion-card-content>
-        </ion-card>
-    {% endfill %}
-{% endcomponent %}
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Icon" %}</label>
+                        {{ form.icon }}
+                        <p class="text-xs text-muted mt-1">{% trans "e.g. star-outline, diamond-outline, trophy-outline" %}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Color" %}</label>
+                        <input type="color" name="color"
+                            value="{% if form.color.value %}{{ form.color.value }}{% else %}#cd7f32{% endif %}"
+                            class="w-full h-10 rounded cursor-pointer">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">{% trans "Description" %}</label>
+                    {{ form.description }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Requirements -->
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">{% trans "Requirements" %}</h3></div>
+            <div class="card-body">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Minimum Points" %}</label>
+                        {{ form.min_points }}
+                        <p class="text-xs text-muted mt-1">{% trans "Lifetime points to reach this tier" %}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Minimum Spent" %}</label>
+                        {{ form.min_spent }}
+                        <p class="text-xs text-muted mt-1">{% trans "Total amount spent to reach this tier" %}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Benefits -->
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">{% trans "Benefits" %}</h3></div>
+            <div class="card-body space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Points Multiplier" %}</label>
+                        {{ form.points_multiplier }}
+                        <p class="text-xs text-muted mt-1">{% trans "1.5 = 50% more points earned" %}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Discount %" %}</label>
+                        {{ form.discount_percent }}
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="font-semibold">{% trans "Free Shipping" %}</h4>
+                        <p class="text-sm text-muted">{% trans "Members get free shipping on all orders" %}</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" name="free_shipping" {% if form.free_shipping.value %}checked{% endif %}>
+                        
+                    </label>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="font-semibold">{% trans "Exclusive Offers" %}</h4>
+                        <p class="text-sm text-muted">{% trans "Access to exclusive deals and promotions" %}</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" name="exclusive_offers" {% if form.exclusive_offers.value %}checked{% endif %}>
+                        
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings -->
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">{% trans "Settings" %}</h3></div>
+            <div class="card-body space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">{% trans "Display Order" %}</label>
+                    {{ form.sort_order }}
+                    <p class="text-xs text-muted mt-1">{% trans "Lower numbers appear first" %}</p>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="font-semibold">{% trans "Default for New Members" %}</h4>
+                        <p class="text-sm text-muted">{% trans "Automatically assign this tier to new members" %}</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" name="is_default" {% if form.is_default.value %}checked{% endif %}>
+                        
+                    </label>
+                </div>
+                {% if not is_create %}
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="font-semibold">{% trans "Active" %}</h4>
+                        <p class="text-sm text-muted">{% trans "Inactive tiers are hidden from selection" %}</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" name="is_active" {% if form.is_active.value %}checked{% endif %}>
+                        
+                    </label>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="flex justify-end gap-3">
+            <button type="button" class="btn btn-outline"
+                hx-get="{% url 'loyalty:tiers_list' %}"
+                hx-target="#main-content-area"
+                hx-push-url="true">
+                {% trans "Cancel" %}
+            </button>
+            <button type="submit" class="btn color-primary">
+                {% icon "checkmark-outline" css_class="mr-1" %}
+                {% if is_create %}{% trans "Create Tier" %}{% else %}{% trans "Save Changes" %}{% endif %}
+            </button>
+        </div>
+    </form>
+</div>

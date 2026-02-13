@@ -1,167 +1,181 @@
-{% load i18n component_tags %}
+{% load i18n djicons %}
 
-{% component "page"
-    title=reward.name
-    subtitle=reward.points_cost|add:" "|add:_("points")
-    module_id="loyalty"
-    tabbar_view="rewards"
-    back_url="loyalty:rewards_list" %}
+<div class="p-4">
+    <button class="btn btn-ghost btn-sm mb-4"
+        hx-get="{% url 'loyalty:rewards_list' %}"
+        hx-target="#main-content-area"
+        hx-push-url="true">
+        {% icon "arrow-back-outline" css_class="mr-1" %}
+        {% trans "Back to Rewards" %}
+    </button>
 
-    {% fill "header_actions" %}
-        {% if reward.is_featured %}
-        <ion-badge color="warning">{% trans "Featured" %}</ion-badge>
-        {% endif %}
-        {% if not reward.is_active %}
-        <ion-badge color="danger">{% trans "Inactive" %}</ion-badge>
-        {% endif %}
-        <ion-button
-            fill="outline"
-            hx-get="{% url 'loyalty:reward_edit' pk=reward.pk %}"
-            hx-target="#main-content-area"
-            hx-push-url="true">
-            <ion-icon slot="start" name="create"></ion-icon>
-            {% trans "Edit" %}
-        </ion-button>
-        <ion-button
-            fill="outline"
-            color="danger"
-            hx-post="{% url 'loyalty:reward_delete' pk=reward.pk %}"
-            hx-target="#main-content-area"
-            hx-confirm="{% trans 'Deactivate this reward?' %}">
-            <ion-icon slot="start" name="close"></ion-icon>
-            {% trans "Deactivate" %}
-        </ion-button>
-    {% endfill %}
-
-    {% fill "content" %}
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Reward Info -->
-            <ion-card class="lg:col-span-2">
-                <ion-card-header>
-                    <ion-card-title>{% trans "Reward Details" %}</ion-card-title>
-                </ion-card-header>
-                <ion-card-content>
-                    {% if reward.description %}
-                    <p class="text-gray-600 mb-4">{{ reward.description }}</p>
-                    {% endif %}
-
-                    <ion-list>
-                        <ion-item>
-                            <ion-icon slot="start" name="pricetag-outline"></ion-icon>
-                            <ion-label>
-                                <p>{% trans "Type" %}</p>
-                                <h3>{{ reward.get_reward_type_display }}</h3>
-                            </ion-label>
-                        </ion-item>
-                        <ion-item>
-                            <ion-icon slot="start" name="cash-outline"></ion-icon>
-                            <ion-label>
-                                <p>{% trans "Value" %}</p>
-                                <h3>
-                                    {% if reward.reward_type == 'discount_percent' %}
-                                        {{ reward.value }}%
-                                    {% else %}
-                                        {{ reward.value }}€
-                                    {% endif %}
-                                </h3>
-                            </ion-label>
-                        </ion-item>
-                        {% if reward.product_name %}
-                        <ion-item>
-                            <ion-icon slot="start" name="cube-outline"></ion-icon>
-                            <ion-label>
-                                <p>{% trans "Product" %}</p>
-                                <h3>{{ reward.product_name }}</h3>
-                            </ion-label>
-                        </ion-item>
-                        {% endif %}
-                        {% if reward.min_tier %}
-                        <ion-item>
-                            <ion-icon slot="start" name="ribbon-outline"></ion-icon>
-                            <ion-label>
-                                <p>{% trans "Minimum Tier" %}</p>
-                                <h3>{{ reward.min_tier.name }}</h3>
-                            </ion-label>
-                        </ion-item>
-                        {% endif %}
-                        <ion-item>
-                            <ion-icon slot="start" name="repeat-outline"></ion-icon>
-                            <ion-label>
-                                <p>{% trans "Max Redemptions" %}</p>
-                                <h3>{{ reward.max_redemptions|default:"Unlimited" }}</h3>
-                            </ion-label>
-                        </ion-item>
-                        <ion-item>
-                            <ion-icon slot="start" name="person-outline"></ion-icon>
-                            <ion-label>
-                                <p>{% trans "Max Per Member" %}</p>
-                                <h3>{{ reward.max_per_member }}</h3>
-                            </ion-label>
-                        </ion-item>
-                    </ion-list>
-                </ion-card-content>
-            </ion-card>
-
-            <!-- Stats -->
-            <ion-card>
-                <ion-card-header>
-                    <ion-card-title>{% trans "Statistics" %}</ion-card-title>
-                </ion-card-header>
-                <ion-card-content>
-                    <div class="text-center mb-4">
-                        <p class="text-sm text-gray-500">{% trans "Times Redeemed" %}</p>
-                        <p class="text-3xl font-bold text-purple-600">{{ reward.times_redeemed }}</p>
+    <!-- Header Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    {% if reward.image %}
+                    <img src="{{ reward.image.url }}" alt="{{ reward.name }}" class="w-14 h-14 rounded-xl object-cover">
+                    {% else %}
+                    <div class="w-14 h-14 bg-warning/10 rounded-xl flex items-center justify-center">
+                        {% icon reward.icon css_class="text-3xl text-warning" %}
                     </div>
-                    <ion-list>
-                        <ion-item>
-                            <ion-label>{% trans "Available" %}</ion-label>
-                            <ion-badge slot="end" color="{% if reward.is_available %}success{% else %}danger{% endif %}">
-                                {% if reward.is_available %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}
-                            </ion-badge>
-                        </ion-item>
-                        <ion-item>
-                            <ion-label>{% trans "Created" %}</ion-label>
-                            <ion-note slot="end">{{ reward.created_at|date:"d M Y" }}</ion-note>
-                        </ion-item>
-                    </ion-list>
-                </ion-card-content>
-            </ion-card>
+                    {% endif %}
+                    <div>
+                        <h2 class="text-xl font-bold">{{ reward.name }}</h2>
+                        <span class="text-primary font-bold">{{ reward.points_cost }} {% trans "points" %}</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    {% if reward.is_featured %}
+                    <span class="badge color-warning">{% icon "star" css_class="mr-1" %} {% trans "Featured" %}</span>
+                    {% endif %}
+                    {% if not reward.is_active %}
+                    <span class="badge color-error">{% trans "Inactive" %}</span>
+                    {% endif %}
+                    <button class="btn btn-sm btn-outline"
+                        hx-get="{% url 'loyalty:reward_edit' pk=reward.pk %}"
+                        hx-target="#main-content-area"
+                        hx-push-url="true">
+                        {% icon "create-outline" css_class="mr-1" %}
+                        {% trans "Edit" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if reward.description %}
+            <p class="text-muted mb-4">{{ reward.description }}</p>
+            {% endif %}
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="p-3 rounded-lg bg-base-100">
+                    <div class="text-xs text-muted uppercase font-semibold mb-1">{% trans "Type" %}</div>
+                    <div class="font-semibold">{{ reward.get_reward_type_display }}</div>
+                </div>
+                <div class="p-3 rounded-lg bg-base-100">
+                    <div class="text-xs text-muted uppercase font-semibold mb-1">{% trans "Value" %}</div>
+                    <div class="font-semibold">
+                        {% if reward.reward_type == 'discount_percent' %}{{ reward.value }}%{% else %}{{ reward.value }}{% endif %}
+                    </div>
+                </div>
+                <div class="p-3 rounded-lg bg-base-100">
+                    <div class="text-xs text-muted uppercase font-semibold mb-1">{% trans "Redeemed" %}</div>
+                    <div class="font-semibold text-primary">{{ reward.times_redeemed }}{% if reward.max_redemptions %}/{{ reward.max_redemptions }}{% endif %}</div>
+                </div>
+                <div class="p-3 rounded-lg bg-base-100">
+                    <div class="text-xs text-muted uppercase font-semibold mb-1">{% trans "Available" %}</div>
+                    <div class="font-semibold {% if reward.is_available %}text-success{% else %}text-error{% endif %}">
+                        {% if reward.is_available %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">{% trans "Details" %}</h3></div>
+            <div class="card-body p-0">
+                <div class="list">
+                    {% if reward.product_name %}
+                    <div class="list-item">
+                        <div class="list-item-content"><div class="list-item-label">{% trans "Product" %}</div></div>
+                        <div class="list-item-end text-muted">{{ reward.product_name }}</div>
+                    </div>
+                    {% endif %}
+                    {% if reward.min_tier %}
+                    <div class="list-item">
+                        <div class="list-item-content"><div class="list-item-label">{% trans "Min Tier" %}</div></div>
+                        <div class="list-item-end">
+                            <span class="badge badge-sm" style="background-color: {{ reward.min_tier.color }}; color: #fff;">{{ reward.min_tier.name }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="list-item">
+                        <div class="list-item-content"><div class="list-item-label">{% trans "Max Redemptions" %}</div></div>
+                        <div class="list-item-end text-muted">{{ reward.max_redemptions|default:_("Unlimited") }}</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-item-content"><div class="list-item-label">{% trans "Max Per Member" %}</div></div>
+                        <div class="list-item-end text-muted">{{ reward.max_per_member }}</div>
+                    </div>
+                    {% if reward.valid_from %}
+                    <div class="list-item">
+                        <div class="list-item-content"><div class="list-item-label">{% trans "Valid From" %}</div></div>
+                        <div class="list-item-end text-muted">{{ reward.valid_from|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    {% endif %}
+                    {% if reward.valid_until %}
+                    <div class="list-item">
+                        <div class="list-item-content"><div class="list-item-label">{% trans "Valid Until" %}</div></div>
+                        <div class="list-item-end text-muted">{{ reward.valid_until|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    {% endif %}
+                    <div class="list-item">
+                        <div class="list-item-content"><div class="list-item-label">{% trans "Created" %}</div></div>
+                        <div class="list-item-end text-muted">{{ reward.created_at|date:"d/m/Y" }}</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Recent Redemptions -->
-        <ion-card class="mt-6">
-            <ion-card-header>
-                <ion-card-title>{% trans "Recent Redemptions" %}</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-                <ion-list>
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">{% trans "Recent Redemptions" %}</h3></div>
+            <div class="card-body p-0">
+                {% if redemptions %}
+                <div class="list">
                     {% for redemption in redemptions %}
-                    <ion-item>
-                        <ion-avatar slot="start">
-                            <div class="w-full h-full flex items-center justify-center bg-blue-500 text-white font-bold">
-                                {{ redemption.member.name|slice:":1"|upper }}
+                    <div class="list-item">
+                        <div class="list-item-start">
+                            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                <span class="text-sm font-bold text-primary">{{ redemption.member.name|slice:":1"|upper }}</span>
                             </div>
-                        </ion-avatar>
-                        <ion-label>
-                            <h3>{{ redemption.member.name }}</h3>
-                            <p>{{ redemption.code }}</p>
-                        </ion-label>
-                        <div slot="end" class="text-right">
-                            <ion-badge color="{% if redemption.status == 'applied' %}success{% elif redemption.status == 'pending' %}warning{% else %}medium{% endif %}">
-                                {{ redemption.get_status_display }}
-                            </ion-badge>
-                            <p class="text-xs text-gray-500">{{ redemption.created_at|date:"d M Y H:i" }}</p>
                         </div>
-                    </ion-item>
-                    {% empty %}
-                    <ion-item>
-                        <ion-label class="text-center text-gray-500 py-4">
-                            {% trans "No redemptions yet" %}
-                        </ion-label>
-                    </ion-item>
+                        <div class="list-item-content">
+                            <div class="list-item-label">{{ redemption.member.name }}</div>
+                            <div class="list-item-note">{{ redemption.code }} &middot; {{ redemption.created_at|date:"d/m/Y H:i" }}</div>
+                        </div>
+                        <div class="list-item-end">
+                            <span class="badge badge-sm color-{% if redemption.status == 'applied' %}success{% elif redemption.status == 'pending' %}warning{% elif redemption.status == 'expired' %}error{% else %}medium{% endif %}">
+                                {{ redemption.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
                     {% endfor %}
-                </ion-list>
-            </ion-card-content>
-        </ion-card>
-    {% endfill %}
-{% endcomponent %}
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-muted">
+                    {% icon "gift-outline" css_class="text-3xl block mx-auto mb-2" %}
+                    <p>{% trans "No redemptions yet" %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title text-error">{% trans "Danger Zone" %}</h3>
+        </div>
+        <div class="card-body">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-semibold">{% trans "Delete Reward" %}</h4>
+                    <p class="text-sm text-muted">{% trans "This action cannot be undone" %}</p>
+                </div>
+                <form method="post" action="{% url 'loyalty:reward_delete' pk=reward.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline color-error"
+                        onclick="return confirm('{% trans "Are you sure you want to delete this reward?" %}')">
+                        {% icon "trash-outline" css_class="mr-1" %}
+                        {% trans "Delete" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

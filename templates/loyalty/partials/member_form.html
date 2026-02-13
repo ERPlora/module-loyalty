@@ -1,127 +1,111 @@
-{% load i18n component_tags %}
+{% load i18n djicons %}
 
-{% if is_create %}
-{% component "page"
-    title=_("Add Member")
-    module_id="loyalty"
-    tabbar_view="members"
-    back_url="loyalty:members_list" %}
-{% else %}
-{% component "page"
-    title=_("Edit Member")
-    module_id="loyalty"
-    tabbar_view="members"
-    back_url="loyalty:members_list" %}
-{% endif %}
+<div class="p-4">
+    <button class="btn btn-ghost btn-sm mb-4"
+        hx-get="{% url 'loyalty:members_list' %}"
+        hx-target="#main-content-area"
+        hx-push-url="true">
+        {% icon "arrow-back-outline" css_class="mr-1" %}
+        {% trans "Back to Members" %}
+    </button>
 
-    {% fill "content" %}
-        <ion-card>
-            <ion-card-content>
-                <form
-                    method="post"
-                    hx-post="{% if is_create %}{% url 'loyalty:member_create' %}{% else %}{% url 'loyalty:member_edit' pk=member.pk %}{% endif %}"
-                    hx-target="#main-content-area">
-                    {% csrf_token %}
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold">{% if is_create %}{% trans "Add Member" %}{% else %}{% trans "Edit Member" %}{% endif %}</h1>
+    </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Name -->
-                        <div class="md:col-span-2">
-                            <ion-label class="text-sm text-gray-600">{% trans "Name" %} *</ion-label>
-                            <ion-input
-                                name="name"
-                                value="{% if is_create %}{{ form_data.name|default:'' }}{% else %}{{ member.name }}{% endif %}"
-                                required
-                                class="mt-1">
-                            </ion-input>
-                        </div>
+    {% if form.errors %}
+    <div class="card mb-4" style="border-left: 4px solid var(--color-error);">
+        <div class="card-body">
+            <div class="flex items-center gap-2 mb-2">
+                {% icon "alert-circle-outline" css_class="text-error text-xl" %}
+                <span class="font-semibold text-error">{% trans "Please correct the errors below" %}</span>
+            </div>
+            {% for field, errors in form.errors.items %}
+            <p class="text-sm text-error ml-7">{{ field }}: {{ errors.0 }}</p>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 
-                        <!-- Email -->
-                        <div>
-                            <ion-label class="text-sm text-gray-600">{% trans "Email" %}</ion-label>
-                            <ion-input
-                                name="email"
-                                type="email"
-                                value="{% if is_create %}{{ form_data.email|default:'' }}{% else %}{{ member.email }}{% endif %}"
-                                class="mt-1">
-                            </ion-input>
-                        </div>
+    <form method="post"
+        hx-post="{% if is_create %}{% url 'loyalty:member_create' %}{% else %}{% url 'loyalty:member_edit' pk=member.pk %}{% endif %}"
+        hx-target="#main-content-area"
+        class="space-y-4">
+        {% csrf_token %}
 
-                        <!-- Phone -->
-                        <div>
-                            <ion-label class="text-sm text-gray-600">{% trans "Phone" %}</ion-label>
-                            <ion-input
-                                name="phone"
-                                value="{% if is_create %}{{ form_data.phone|default:'' }}{% else %}{{ member.phone }}{% endif %}"
-                                class="mt-1">
-                            </ion-input>
-                        </div>
-
-                        <!-- Card Number -->
-                        <div>
-                            <ion-label class="text-sm text-gray-600">{% trans "Card Number" %}</ion-label>
-                            <ion-input
-                                name="card_number"
-                                value="{% if is_create %}{{ form_data.card_number|default:'' }}{% else %}{{ member.card_number|default:'' }}{% endif %}"
-                                placeholder="{% trans 'Physical or digital card' %}"
-                                class="mt-1">
-                            </ion-input>
-                        </div>
-
-                        <!-- Tier -->
-                        <div>
-                            <ion-label class="text-sm text-gray-600">{% trans "Tier" %}</ion-label>
-                            <ion-select
-                                name="tier"
-                                value="{% if is_create %}{{ form_data.tier|default:'' }}{% else %}{{ member.tier_id|default:'' }}{% endif %}"
-                                interface="popover"
-                                class="mt-1">
-                                <ion-select-option value="">{% trans "Default Tier" %}</ion-select-option>
-                                {% for tier in tiers %}
-                                <ion-select-option value="{{ tier.pk }}">{{ tier.name }}</ion-select-option>
-                                {% endfor %}
-                            </ion-select>
-                        </div>
-
-                        <!-- Notes -->
-                        <div class="md:col-span-2">
-                            <ion-label class="text-sm text-gray-600">{% trans "Notes" %}</ion-label>
-                            <ion-textarea
-                                name="notes"
-                                rows="3"
-                                class="mt-1">{% if is_create %}{{ form_data.notes|default:'' }}{% else %}{{ member.notes }}{% endif %}</ion-textarea>
-                        </div>
-
-                        {% if not is_create %}
-                        <!-- Status -->
-                        <div class="md:col-span-2">
-                            <ion-item lines="none">
-                                <ion-checkbox
-                                    name="is_active"
-                                    slot="start"
-                                    {% if member.is_active %}checked{% endif %}>
-                                </ion-checkbox>
-                                <ion-label>{% trans "Active" %}</ion-label>
-                            </ion-item>
-                        </div>
-                        {% endif %}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{% trans "Personal Information" %}</h3>
+            </div>
+            <div class="card-body space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium mb-1">{% trans "Full Name" %} *</label>
+                        {{ form.name }}
                     </div>
-
-                    <div class="flex justify-end gap-3 mt-6">
-                        <ion-button
-                            fill="outline"
-                            color="medium"
-                            hx-get="{% url 'loyalty:members_list' %}"
-                            hx-target="#main-content-area"
-                            hx-push-url="true">
-                            {% trans "Cancel" %}
-                        </ion-button>
-                        <ion-button type="submit">
-                            <ion-icon slot="start" name="checkmark"></ion-icon>
-                            {% if is_create %}{% trans "Create Member" %}{% else %}{% trans "Save Changes" %}{% endif %}
-                        </ion-button>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Email" %}</label>
+                        {{ form.email }}
                     </div>
-                </form>
-            </ion-card-content>
-        </ion-card>
-    {% endfill %}
-{% endcomponent %}
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Phone" %}</label>
+                        {{ form.phone }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{% trans "Membership" %}</h3>
+            </div>
+            <div class="card-body space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Card Number" %}</label>
+                        {{ form.card_number }}
+                        <p class="text-xs text-muted mt-1">{% trans "Physical or digital card number" %}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Tier" %}</label>
+                        <select name="tier" class="select w-full">
+                            <option value="">{% trans "Default Tier" %}</option>
+                            {% for tier in tiers %}
+                            <option value="{{ tier.pk }}" {% if form.tier.value == tier.pk|slugify %}selected{% endif %}>{{ tier.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">{% trans "Notes" %}</label>
+                    {{ form.notes }}
+                </div>
+                {% if not is_create %}
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="font-semibold">{% trans "Active" %}</h4>
+                        <p class="text-sm text-muted">{% trans "Inactive members cannot earn or redeem points" %}</p>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" name="is_active" {% if member.is_active %}checked{% endif %}>
+                        
+                    </label>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3">
+            <button type="button" class="btn btn-outline"
+                hx-get="{% url 'loyalty:members_list' %}"
+                hx-target="#main-content-area"
+                hx-push-url="true">
+                {% trans "Cancel" %}
+            </button>
+            <button type="submit" class="btn color-primary">
+                {% icon "checkmark-outline" css_class="mr-1" %}
+                {% if is_create %}{% trans "Create Member" %}{% else %}{% trans "Save Changes" %}{% endif %}
+            </button>
+        </div>
+    </form>
+</div>

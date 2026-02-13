@@ -1,12 +1,6 @@
-{% extends "ui/app_base.html" %}
-{% load static %}
+{% extends "module_base.html" %}
 {% load i18n %}
 
-{% block page_title %}
-    {% if is_create %}{% trans "Add Reward" %}
-    {% else %}{% trans "Edit Reward" %}{% endif %}
-{% endblock %}
-
-{% block page_content %}
+{% block module_content %}
 {% include "loyalty/partials/reward_form.html" %}
 {% endblock %}

@@ -1,1 +1,1 @@
-default_app_config = 'loyalty.apps.LoyaltyConfig'
+default_app_config = 'modules.loyalty.apps.LoyaltyConfig'

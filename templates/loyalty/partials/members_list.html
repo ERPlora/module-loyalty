@@ -1,147 +1,135 @@
-{% load i18n component_tags %}
+{% load i18n djicons %}
 
-{% component "page"
-    title=_("Loyalty Members")
-    subtitle=total_count|add:" "|add:_("members")
-    module_id="loyalty"
-    tabbar_view="members" %}
-
-    {% fill "header_actions" %}
-        <ion-button
-            color="medium"
-            href="{% url 'loyalty:export_members_csv' %}">
-            <ion-icon slot="start" name="download-outline"></ion-icon>
-            {% trans "Export" %}
-        </ion-button>
-        <ion-button
-            hx-get="{% url 'loyalty:member_create' %}"
-            hx-target="#main-content-area"
-            hx-push-url="true">
-            <ion-icon slot="start" name="add"></ion-icon>
-            {% trans "Add Member" %}
-        </ion-button>
-    {% endfill %}
-
-    {% fill "content" %}
-        <!-- Filters -->
-        <ion-card class="mb-4">
-            <ion-card-content>
-                <form
-                    hx-get="{% url 'loyalty:members_list' %}"
+<div class="p-4">
+    <div class="mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold">{% trans "Members" %}</h1>
+                <p class="text-sm mt-2 text-muted">{{ total_count }} {% trans "members enrolled" %}</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <a class="btn btn-sm btn-outline" href="{% url 'loyalty:export_members_csv' %}">
+                    {% icon "download-outline" css_class="mr-1" %}
+                    {% trans "Export" %}
+                </a>
+                <button class="btn color-primary"
+                    hx-get="{% url 'loyalty:member_create' %}"
                     hx-target="#main-content-area"
-                    hx-push-url="true"
-                    class="flex flex-wrap gap-4 items-end">
+                    hx-push-url="true">
+                    {% icon "add-outline" css_class="mr-1" %}
+                    {% trans "Add Member" %}
+                </button>
+            </div>
+        </div>
+    </div>
 
-                    <div class="flex-1 min-w-[200px]">
-                        <ion-label class="text-sm text-gray-600">{% trans "Search" %}</ion-label>
-                        <ion-input
-                            name="search"
-                            value="{{ search }}"
-                            placeholder="{% trans 'Name, email, phone, card...' %}"
-                            class="mt-1">
-                        </ion-input>
-                    </div>
-
-                    <div class="min-w-[150px]">
-                        <ion-label class="text-sm text-gray-600">{% trans "Tier" %}</ion-label>
-                        <ion-select name="tier" value="{{ tier_filter }}" interface="popover" class="mt-1">
-                            <ion-select-option value="">{% trans "All Tiers" %}</ion-select-option>
-                            {% for tier in tiers %}
-                            <ion-select-option value="{{ tier.pk }}">{{ tier.name }}</ion-select-option>
-                            {% endfor %}
-                        </ion-select>
-                    </div>
-
-                    <div class="min-w-[120px]">
-                        <ion-label class="text-sm text-gray-600">{% trans "Status" %}</ion-label>
-                        <ion-select name="status" value="{{ status_filter }}" interface="popover" class="mt-1">
-                            <ion-select-option value="">{% trans "All" %}</ion-select-option>
-                            <ion-select-option value="active">{% trans "Active" %}</ion-select-option>
-                            <ion-select-option value="inactive">{% trans "Inactive" %}</ion-select-option>
-                        </ion-select>
-                    </div>
-
-                    <ion-button type="submit">
-                        <ion-icon slot="icon-only" name="search"></ion-icon>
-                    </ion-button>
-                </form>
-            </ion-card-content>
-        </ion-card>
-
-        <!-- Members List -->
-        <ion-card>
-            <ion-card-content class="p-0">
-                <ion-list>
-                    {% for member in members %}
-                    <ion-item
-                        button
-                        hx-get="{% url 'loyalty:member_detail' pk=member.pk %}"
-                        hx-target="#main-content-area"
-                        hx-push-url="true">
-                        <ion-avatar slot="start">
-                            <div class="w-full h-full flex items-center justify-center bg-blue-500 text-white font-bold">
-                                {{ member.name|slice:":1"|upper }}
-                            </div>
-                        </ion-avatar>
-                        <ion-label>
-                            <h2>{{ member.name }}</h2>
-                            <p>{{ member.member_number }}{% if member.card_number %} | {{ member.card_number }}{% endif %}</p>
-                            <p class="text-xs text-gray-400">
-                                {% if member.email %}{{ member.email }}{% endif %}
-                                {% if member.phone %} | {{ member.phone }}{% endif %}
-                            </p>
-                        </ion-label>
-                        <div slot="end" class="text-right">
-                            {% if member.tier %}
-                            <ion-badge style="--background: {{ member.tier.color }};" class="mb-1">
-                                {{ member.tier.name }}
-                            </ion-badge>
-                            {% endif %}
-                            <p class="text-lg font-bold text-blue-600">{{ member.points_balance }} pts</p>
-                            <p class="text-xs text-gray-500">{% trans "Lifetime" %}: {{ member.lifetime_points }}</p>
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form hx-get="{% url 'loyalty:members_list' %}"
+                  hx-target="#main-content-area"
+                  hx-push-url="true"
+                  hx-trigger="submit, change from:select">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div class="md:col-span-2">
+                        <div class="input-group">
+                            <span class="input-group__start">{% icon "search-outline" %}</span>
+                            <input type="text" name="q" value="{{ filter_form.q.value|default:'' }}"
+                                placeholder="{% trans 'Name, email, phone, card...' %}"
+                                class="input"
+                                hx-trigger="keyup changed delay:400ms">
                         </div>
-                    </ion-item>
-                    {% empty %}
-                    <ion-item>
-                        <ion-label class="text-center text-gray-500 py-8">
-                            <ion-icon name="people-outline" class="text-4xl mb-2 block"></ion-icon>
-                            {% trans "No members found" %}
-                        </ion-label>
-                    </ion-item>
-                    {% endfor %}
-                </ion-list>
-            </ion-card-content>
-        </ion-card>
+                    </div>
+                    <select name="tier" class="select">
+                        <option value="">{% trans "All Tiers" %}</option>
+                        {% for tier in tiers %}
+                        <option value="{{ tier.pk }}" {% if filter_form.tier.value == tier.pk|slugify %}selected{% endif %}>{{ tier.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="status" class="select">
+                        <option value="">{% trans "All Status" %}</option>
+                        <option value="active" {% if filter_form.status.value == 'active' %}selected{% endif %}>{% trans "Active" %}</option>
+                        <option value="inactive" {% if filter_form.status.value == 'inactive' %}selected{% endif %}>{% trans "Inactive" %}</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        <!-- Pagination -->
-        {% if page_obj.has_other_pages %}
-        <div class="flex justify-center mt-4 gap-2">
-            {% if page_obj.has_previous %}
-            <ion-button
-                fill="outline"
-                hx-get="{% url 'loyalty:members_list' %}?page={{ page_obj.previous_page_number }}&search={{ search }}&tier={{ tier_filter }}&status={{ status_filter }}"
-                hx-target="#main-content-area"
-                hx-push-url="true">
-                <ion-icon slot="start" name="chevron-back"></ion-icon>
-                {% trans "Previous" %}
-            </ion-button>
-            {% endif %}
-
-            <span class="flex items-center px-4 text-gray-600">
-                {% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}
-            </span>
-
-            {% if page_obj.has_next %}
-            <ion-button
-                fill="outline"
-                hx-get="{% url 'loyalty:members_list' %}?page={{ page_obj.next_page_number }}&search={{ search }}&tier={{ tier_filter }}&status={{ status_filter }}"
-                hx-target="#main-content-area"
-                hx-push-url="true">
-                {% trans "Next" %}
-                <ion-icon slot="end" name="chevron-forward"></ion-icon>
-            </ion-button>
+    <!-- Members List -->
+    <div class="card">
+        <div class="card-body p-0">
+            {% if members %}
+            <div class="list">
+                {% for member in members %}
+                <a hx-get="{% url 'loyalty:member_detail' pk=member.pk %}"
+                   hx-target="#main-content-area"
+                   hx-push-url="true"
+                   class="list-item list-item-clickable">
+                    <div class="list-item-start">
+                        <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                            <span class="font-bold text-primary">{{ member.name|slice:":1"|upper }}</span>
+                        </div>
+                    </div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">
+                            {{ member.name }}
+                            {% if not member.is_active %}
+                            <span class="badge badge-sm color-error ml-2">{% trans "Inactive" %}</span>
+                            {% endif %}
+                        </div>
+                        <div class="list-item-note">
+                            {{ member.member_number }}{% if member.card_number %} &middot; {{ member.card_number }}{% endif %}
+                            {% if member.email %} &middot; {{ member.email }}{% endif %}
+                            {% if member.phone %} &middot; {{ member.phone }}{% endif %}
+                        </div>
+                    </div>
+                    <div class="list-item-end text-right">
+                        {% if member.tier %}
+                        <span class="badge badge-sm mb-1" style="background-color: {{ member.tier.color }}; color: #fff;">{{ member.tier.name }}</span>
+                        {% endif %}
+                        <div class="text-lg font-bold text-primary">{{ member.points_balance }} <span class="text-xs font-normal text-muted">pts</span></div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12 text-muted">
+                {% icon "people-outline" css_class="text-5xl block mx-auto mb-2" %}
+                <p class="mt-2">{% trans "No members found" %}</p>
+                <button class="btn btn-sm color-primary mt-3"
+                    hx-get="{% url 'loyalty:member_create' %}"
+                    hx-target="#main-content-area"
+                    hx-push-url="true">
+                    {% trans "Add your first member" %}
+                </button>
+            </div>
             {% endif %}
         </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-center items-center mt-4 gap-2">
+        {% if page_obj.has_previous %}
+        <button class="btn btn-sm btn-outline"
+            hx-get="{% url 'loyalty:members_list' %}?page={{ page_obj.previous_page_number }}&q={{ filter_form.q.value|default:'' }}&tier={{ filter_form.tier.value|default:'' }}&status={{ filter_form.status.value|default:'' }}"
+            hx-target="#main-content-area"
+            hx-push-url="true">
+            {% icon "chevron-back" %}
+        </button>
         {% endif %}
-    {% endfill %}
-{% endcomponent %}
+        <span class="text-sm text-muted px-3">
+            {% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}
+        </span>
+        {% if page_obj.has_next %}
+        <button class="btn btn-sm btn-outline"
+            hx-get="{% url 'loyalty:members_list' %}?page={{ page_obj.next_page_number }}&q={{ filter_form.q.value|default:'' }}&tier={{ filter_form.tier.value|default:'' }}&status={{ filter_form.status.value|default:'' }}"
+            hx-target="#main-content-area"
+            hx-push-url="true">
+            {% icon "chevron-forward" %}
+        </button>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>

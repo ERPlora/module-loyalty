@@ -1,143 +1,184 @@
-{% load i18n ui component_tags %}
+{% load i18n djicons %}
 
-{% component "page"
-    title=config.program_name
-    subtitle=_("Loyalty program overview and statistics")
-    module_id="loyalty"
-    tabbar_view="dashboard" %}
-
-    {% fill "content" %}
-        {% if not config.program_enabled %}
-        <div class="mb-md">
-            <ion-badge color="warning">{% trans "Program Disabled" %}</ion-badge>
-        </div>
-        {% endif %}
-
-        <!-- Stats Cards -->
-        <ion-row class="mb-md">
-            <ion-col size="6" size-md="3">
-                {% ui_stat_card value=total_members label=_("Total Members") icon="people-outline" color="primary" %}
-            </ion-col>
-            <ion-col size="6" size-md="3">
-                {% ui_stat_card value=points_in_circulation|default:0 label=_("Points in Circulation") icon="star-outline" color="success" %}
-            </ion-col>
-            <ion-col size="6" size-md="3">
-                {% ui_stat_card value=total_points_redeemed|default:0 label=_("Points Redeemed") icon="gift-outline" color="tertiary" %}
-            </ion-col>
-            <ion-col size="6" size-md="3">
-                {% ui_stat_card value=active_rewards label=_("Active Rewards") icon="trophy-outline" color="warning" %}
-            </ion-col>
-        </ion-row>
-
-        <ion-row class="mb-md">
-            <!-- Top Members -->
-            <ion-col size="12" size-lg="4">
-                {% ui_card title=_("Top Members") %}
-                    <ion-list lines="full">
-                        {% for member in top_members %}
-                        <ion-item button
-                            hx-get="{% url 'loyalty:member_detail' pk=member.pk %}"
-                            hx-target="#main-content-area"
-                            hx-push-url="true">
-                            <ion-avatar slot="start">
-                                <div class="w-100 h-100 d-flex align-center justify-center bg-primary text-white fw-bold">
-                                    {{ member.name|slice:":1"|upper }}
-                                </div>
-                            </ion-avatar>
-                            <ion-label>
-                                <h3>{{ member.name }}</h3>
-                                <p>{{ member.lifetime_points }} {% trans "points" %}</p>
-                            </ion-label>
-                            {% if member.tier %}
-                            <ion-badge slot="end" style="--background: {{ member.tier.color }};">
-                                {{ member.tier.name }}
-                            </ion-badge>
-                            {% endif %}
-                        </ion-item>
-                        {% empty %}
-                        <ion-item>
-                            <ion-label class="text-secondary">{% trans "No members yet" %}</ion-label>
-                        </ion-item>
-                        {% endfor %}
-                    </ion-list>
-                {% endui_card %}
-            </ion-col>
-
-            <!-- Tier Distribution -->
-            <ion-col size="12" size-lg="4">
-                {% ui_card title=_("Tier Distribution") %}
-                    <ion-list lines="full">
-                        {% for stat in tier_stats %}
-                        <ion-item>
-                            <div slot="start" class="rounded-full" style="width: 16px; height: 16px; background-color: {{ stat.tier__color|default:'#gray' }};"></div>
-                            <ion-label>{{ stat.tier__name|default:"No Tier" }}</ion-label>
-                            <ion-badge slot="end">{{ stat.count }}</ion-badge>
-                        </ion-item>
-                        {% empty %}
-                        <ion-item>
-                            <ion-label class="text-secondary">{% trans "No data" %}</ion-label>
-                        </ion-item>
-                        {% endfor %}
-                    </ion-list>
-                {% endui_card %}
-            </ion-col>
-
-            <!-- Recent Activity -->
-            <ion-col size="12" size-lg="4">
-                {% ui_card title=_("Recent Activity") %}
-                    <ion-list lines="full">
-                        {% for tx in recent_transactions %}
-                        <ion-item>
-                            <ion-icon
-                                slot="start"
-                                name="{% if tx.points > 0 %}add-circle{% else %}remove-circle{% endif %}"
-                                class="{% if tx.points > 0 %}text-success{% else %}text-danger{% endif %}">
-                            </ion-icon>
-                            <ion-label>
-                                <h3>{{ tx.member.name }}</h3>
-                                <p>{{ tx.description|default:tx.get_transaction_type_display }}</p>
-                            </ion-label>
-                            <ion-note slot="end" class="{% if tx.points > 0 %}text-success{% else %}text-danger{% endif %}">
-                                {% if tx.points > 0 %}+{% endif %}{{ tx.points }}
-                            </ion-note>
-                        </ion-item>
-                        {% empty %}
-                        <ion-item>
-                            <ion-label class="text-secondary">{% trans "No activity yet" %}</ion-label>
-                        </ion-item>
-                        {% endfor %}
-                    </ion-list>
-                {% endui_card %}
-            </ion-col>
-        </ion-row>
-
-        <!-- Quick Actions -->
-        {% ui_card title=_("Quick Actions") %}
-            <div class="d-flex flex-wrap gap-sm">
-                <ion-button
-                    hx-get="{% url 'loyalty:member_create' %}"
-                    hx-target="#main-content-area"
-                    hx-push-url="true">
-                    <ion-icon slot="start" name="person-add-outline"></ion-icon>
-                    {% trans "Add Member" %}
-                </ion-button>
-                <ion-button
-                    color="secondary"
-                    hx-get="{% url 'loyalty:reward_create' %}"
-                    hx-target="#main-content-area"
-                    hx-push-url="true">
-                    <ion-icon slot="start" name="gift-outline"></ion-icon>
-                    {% trans "Create Reward" %}
-                </ion-button>
-                <ion-button
-                    color="tertiary"
-                    hx-get="{% url 'loyalty:tier_create' %}"
-                    hx-target="#main-content-area"
-                    hx-push-url="true">
-                    <ion-icon slot="start" name="ribbon-outline"></ion-icon>
-                    {% trans "Add Tier" %}
-                </ion-button>
+<div class="p-4">
+    <div class="mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold">{{ settings.program_name|default:_("Loyalty Program") }}</h1>
+                <p class="text-sm mt-2 text-muted">{% trans "Overview and statistics" %}</p>
             </div>
-        {% endui_card %}
-    {% endfill %}
-{% endcomponent %}
+            {% if not settings.program_enabled %}
+            <span class="badge color-warning">{% icon "pause-circle-outline" css_class="mr-1" %} {% trans "Program Disabled" %}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="card">
+            <div class="card-body flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    {% icon "people-outline" css_class="text-xl text-primary" %}
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">{{ total_members }}</div>
+                    <div class="text-xs text-muted">{% trans "Active Members" %}</div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
+                    {% icon "star-outline" css_class="text-xl text-success" %}
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">{{ points_in_circulation|default:0 }}</div>
+                    <div class="text-xs text-muted">{% trans "Points in Circulation" %}</div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center">
+                    {% icon "gift-outline" css_class="text-xl text-warning" %}
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">{{ total_points_redeemed|default:0 }}</div>
+                    <div class="text-xs text-muted">{% trans "Points Redeemed" %}</div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-error/10 flex items-center justify-center">
+                    {% icon "trophy-outline" css_class="text-xl text-error" %}
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">{{ active_rewards }}</div>
+                    <div class="text-xs text-muted">{% trans "Active Rewards" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">{% trans "Top Members" %}</h3></div>
+            <div class="card-body p-0">
+                {% if top_members %}
+                <div class="list">
+                    {% for member in top_members %}
+                    <a hx-get="{% url 'loyalty:member_detail' pk=member.pk %}" hx-target="#main-content-area" hx-push-url="true" class="list-item list-item-clickable">
+                        <div class="list-item-start">
+                            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                <span class="text-sm font-bold text-primary">{{ member.name|slice:":1"|upper }}</span>
+                            </div>
+                        </div>
+                        <div class="list-item-content">
+                            <div class="list-item-label">{{ member.name }}</div>
+                            <div class="list-item-note">{{ member.lifetime_points }} {% trans "pts lifetime" %}</div>
+                        </div>
+                        <div class="list-item-end">
+                            {% if member.tier %}
+                            <span class="badge badge-sm" style="background-color: {{ member.tier.color }}; color: #fff;">{{ member.tier.name }}</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-muted">
+                    {% icon "people-outline" css_class="text-3xl block mx-auto mb-2" %}
+                    <p>{% trans "No members yet" %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">{% trans "Tier Distribution" %}</h3></div>
+            <div class="card-body p-0">
+                {% if tier_stats %}
+                <div class="list">
+                    {% for stat in tier_stats %}
+                    <div class="list-item">
+                        <div class="list-item-start">
+                            <div class="w-4 h-4 rounded-full" style="background-color: {{ stat.tier__color|default:'#9ca3af' }};"></div>
+                        </div>
+                        <div class="list-item-content">
+                            <div class="list-item-label">{{ stat.tier__name|default:_("No Tier") }}</div>
+                        </div>
+                        <div class="list-item-end"><span class="badge badge-sm">{{ stat.count }}</span></div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-muted">
+                    {% icon "ribbon-outline" css_class="text-3xl block mx-auto mb-2" %}
+                    <p>{% trans "No tier data" %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">{% trans "Recent Activity" %}</h3></div>
+            <div class="card-body p-0">
+                {% if recent_transactions %}
+                <div class="list">
+                    {% for tx in recent_transactions %}
+                    <div class="list-item">
+                        <div class="list-item-start">
+                            {% if tx.points > 0 %}{% icon "add-circle" css_class="text-xl text-success" %}{% else %}{% icon "remove-circle" css_class="text-xl text-error" %}{% endif %}
+                        </div>
+                        <div class="list-item-content">
+                            <div class="list-item-label">{{ tx.member.name }}</div>
+                            <div class="list-item-note">{{ tx.description|default:tx.get_transaction_type_display }}</div>
+                        </div>
+                        <div class="list-item-end">
+                            <span class="font-semibold {% if tx.points > 0 %}text-success{% else %}text-error{% endif %}">{% if tx.points > 0 %}+{% endif %}{{ tx.points }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-muted">
+                    {% icon "list-outline" css_class="text-3xl block mx-auto mb-2" %}
+                    <p>{% trans "No activity yet" %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h3 class="card-title">{% trans "Quick Actions" %}</h3></div>
+        <div class="card-body p-0">
+            <div class="list">
+                <a hx-get="{% url 'loyalty:member_create' %}" hx-target="#main-content-area" hx-push-url="true" class="list-item list-item-clickable">
+                    <div class="list-item-start">{% icon "person-add-outline" css_class="text-xl text-primary" %}</div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Add Member" %}</div>
+                        <div class="list-item-note">{% trans "Enroll a new customer in the loyalty program" %}</div>
+                    </div>
+                    <div class="list-item-end">{% icon "chevron-forward-outline" css_class="text-muted" %}</div>
+                </a>
+                <a hx-get="{% url 'loyalty:reward_create' %}" hx-target="#main-content-area" hx-push-url="true" class="list-item list-item-clickable">
+                    <div class="list-item-start">{% icon "gift-outline" css_class="text-xl text-warning" %}</div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Create Reward" %}</div>
+                        <div class="list-item-note">{% trans "Add a new redeemable reward for members" %}</div>
+                    </div>
+                    <div class="list-item-end">{% icon "chevron-forward-outline" css_class="text-muted" %}</div>
+                </a>
+                <a hx-get="{% url 'loyalty:tier_create' %}" hx-target="#main-content-area" hx-push-url="true" class="list-item list-item-clickable">
+                    <div class="list-item-start">{% icon "ribbon-outline" css_class="text-xl text-success" %}</div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Add Tier" %}</div>
+                        <div class="list-item-note">{% trans "Configure a new membership level" %}</div>
+                    </div>
+                    <div class="list-item-end">{% icon "chevron-forward-outline" css_class="text-muted" %}</div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

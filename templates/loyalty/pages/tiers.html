@@ -1,9 +1,6 @@
-{% extends "ui/app_base.html" %}
-{% load static %}
+{% extends "module_base.html" %}
 {% load i18n %}
 
-{% block page_title %}{% trans "Loyalty Tiers" %}{% endblock %}
-
-{% block page_content %}
+{% block module_content %}
 {% include "loyalty/partials/tiers_list.html" %}
 {% endblock %}

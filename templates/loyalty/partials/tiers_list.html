@@ -1,114 +1,117 @@
-{% load i18n component_tags %}
+{% load i18n djicons %}
 
-{% component "page"
-    title=_("Loyalty Tiers")
-    subtitle=_("Configure membership levels and benefits")
-    module_id="loyalty"
-    tabbar_view="tiers" %}
-
-    {% fill "header_actions" %}
-        <ion-button
-            hx-get="{% url 'loyalty:tier_create' %}"
-            hx-target="#main-content-area"
-            hx-push-url="true">
-            <ion-icon slot="start" name="add"></ion-icon>
-            {% trans "Add Tier" %}
-        </ion-button>
-    {% endfill %}
-
-    {% fill "content" %}
-        <!-- Tiers Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {% for tier in tiers %}
-            <ion-card class="{% if not tier.is_active %}opacity-50{% endif %}">
-                <ion-card-header style="background-color: {{ tier.color }}20;">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="p-3 rounded-full" style="background-color: {{ tier.color }};">
-                                <ion-icon name="{{ tier.icon }}" class="text-2xl text-white"></ion-icon>
-                            </div>
-                            <div>
-                                <ion-card-title style="color: {{ tier.color }};">{{ tier.name }}</ion-card-title>
-                                {% if tier.is_default %}
-                                <ion-badge color="primary" class="mt-1">{% trans "Default" %}</ion-badge>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% if not tier.is_active %}
-                        <ion-badge color="medium">{% trans "Inactive" %}</ion-badge>
-                        {% endif %}
-                    </div>
-                </ion-card-header>
-                <ion-card-content>
-                    <ion-list lines="none">
-                        <ion-item>
-                            <ion-icon slot="start" name="trophy-outline" class="text-gray-400"></ion-icon>
-                            <ion-label class="text-sm">{% trans "Min Points" %}</ion-label>
-                            <ion-note slot="end">{{ tier.min_points }}</ion-note>
-                        </ion-item>
-                        <ion-item>
-                            <ion-icon slot="start" name="cash-outline" class="text-gray-400"></ion-icon>
-                            <ion-label class="text-sm">{% trans "Min Spent" %}</ion-label>
-                            <ion-note slot="end">{{ tier.min_spent }}€</ion-note>
-                        </ion-item>
-                        <ion-item>
-                            <ion-icon slot="start" name="star-outline" class="text-gray-400"></ion-icon>
-                            <ion-label class="text-sm">{% trans "Multiplier" %}</ion-label>
-                            <ion-note slot="end">{{ tier.points_multiplier }}x</ion-note>
-                        </ion-item>
-                        {% if tier.discount_percent > 0 %}
-                        <ion-item>
-                            <ion-icon slot="start" name="pricetag-outline" class="text-gray-400"></ion-icon>
-                            <ion-label class="text-sm">{% trans "Discount" %}</ion-label>
-                            <ion-note slot="end">{{ tier.discount_percent }}%</ion-note>
-                        </ion-item>
-                        {% endif %}
-                        <ion-item>
-                            <ion-icon slot="start" name="people-outline" class="text-gray-400"></ion-icon>
-                            <ion-label class="text-sm">{% trans "Members" %}</ion-label>
-                            <ion-note slot="end">{{ tier.member_count|default:0 }}</ion-note>
-                        </ion-item>
-                    </ion-list>
-
-                    <div class="flex gap-2 mt-4">
-                        <ion-button
-                            expand="block"
-                            fill="outline"
-                            size="small"
-                            hx-get="{% url 'loyalty:tier_edit' pk=tier.pk %}"
-                            hx-target="#main-content-area"
-                            hx-push-url="true"
-                            class="flex-1">
-                            <ion-icon slot="start" name="create-outline"></ion-icon>
-                            {% trans "Edit" %}
-                        </ion-button>
-                        {% if tier.member_count == 0 %}
-                        <ion-button
-                            fill="outline"
-                            size="small"
-                            color="danger"
-                            hx-post="{% url 'loyalty:tier_delete' pk=tier.pk %}"
-                            hx-target="#main-content-area"
-                            hx-confirm="{% trans 'Delete this tier?' %}">
-                            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-                        </ion-button>
-                        {% endif %}
-                    </div>
-                </ion-card-content>
-            </ion-card>
-            {% empty %}
-            <div class="col-span-full text-center py-8">
-                <ion-icon name="ribbon-outline" class="text-6xl text-gray-300 mb-4"></ion-icon>
-                <p class="text-gray-500">{% trans "No tiers configured" %}</p>
-                <ion-button
-                    class="mt-4"
-                    hx-get="{% url 'loyalty:tier_create' %}"
-                    hx-target="#main-content-area"
-                    hx-push-url="true">
-                    {% trans "Create First Tier" %}
-                </ion-button>
+<div class="p-4">
+    <div class="mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold">{% trans "Loyalty Tiers" %}</h1>
+                <p class="text-sm mt-2 text-muted">{% trans "Configure membership levels and benefits" %}</p>
             </div>
-            {% endfor %}
+            <button class="btn color-primary"
+                hx-get="{% url 'loyalty:tier_create' %}"
+                hx-target="#main-content-area"
+                hx-push-url="true">
+                {% icon "add-outline" css_class="mr-1" %}
+                {% trans "Add Tier" %}
+            </button>
         </div>
-    {% endfill %}
-{% endcomponent %}
+    </div>
+
+    {% if tiers %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {% for tier in tiers %}
+        <div class="card {% if not tier.is_active %}opacity-50{% endif %}">
+            <div class="card-header" style="border-top: 3px solid {{ tier.color }};">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background-color: {{ tier.color }};">
+                            <span class="text-white text-lg">{% icon tier.icon %}</span>
+                        </div>
+                        <div>
+                            <h3 class="font-bold" style="color: {{ tier.color }};">{{ tier.name }}</h3>
+                            {% if tier.is_default %}
+                            <span class="badge badge-sm color-primary">{% trans "Default" %}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if not tier.is_active %}
+                    <span class="badge badge-sm ">{% trans "Inactive" %}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="list">
+                    <div class="list-item">
+                        <div class="list-item-content"><span class="text-sm text-muted">{% trans "Min Points" %}</span></div>
+                        <div class="list-item-end font-semibold">{{ tier.min_points }}</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-item-content"><span class="text-sm text-muted">{% trans "Min Spent" %}</span></div>
+                        <div class="list-item-end font-semibold">{{ tier.min_spent|floatformat:2 }}</div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-item-content"><span class="text-sm text-muted">{% trans "Multiplier" %}</span></div>
+                        <div class="list-item-end font-semibold">{{ tier.points_multiplier }}x</div>
+                    </div>
+                    {% if tier.discount_percent > 0 %}
+                    <div class="list-item">
+                        <div class="list-item-content"><span class="text-sm text-muted">{% trans "Discount" %}</span></div>
+                        <div class="list-item-end font-semibold text-success">{{ tier.discount_percent }}%</div>
+                    </div>
+                    {% endif %}
+                    <div class="list-item">
+                        <div class="list-item-content"><span class="text-sm text-muted">{% trans "Members" %}</span></div>
+                        <div class="list-item-end"><span class="badge badge-sm">{{ tier.member_count|default:0 }}</span></div>
+                    </div>
+                </div>
+
+                {% if tier.free_shipping or tier.exclusive_offers %}
+                <div class="px-4 pb-3 flex flex-wrap gap-2">
+                    {% if tier.free_shipping %}
+                    <span class="badge badge-sm color-success">{% icon "car-outline" css_class="mr-1" %} {% trans "Free Shipping" %}</span>
+                    {% endif %}
+                    {% if tier.exclusive_offers %}
+                    <span class="badge badge-sm color-warning">{% icon "flash-outline" css_class="mr-1" %} {% trans "Exclusive" %}</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="card__footer">
+                <div class="flex gap-2 w-full">
+                    <button class="btn btn-sm btn-outline flex-1"
+                        hx-get="{% url 'loyalty:tier_edit' pk=tier.pk %}"
+                        hx-target="#main-content-area"
+                        hx-push-url="true">
+                        {% icon "create-outline" css_class="mr-1" %}
+                        {% trans "Edit" %}
+                    </button>
+                    {% if tier.member_count == 0 or not tier.member_count %}
+                    <button class="btn btn-sm btn-outline color-error"
+                        hx-post="{% url 'loyalty:tier_delete' pk=tier.pk %}"
+                        hx-target="#main-content-area"
+                        hx-confirm="{% trans 'Delete this tier?' %}">
+                        {% icon "trash-outline" %}
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-12 text-muted">
+            {% icon "ribbon-outline" css_class="text-5xl block mx-auto mb-2" %}
+            <p class="text-lg">{% trans "No tiers configured" %}</p>
+            <p class="text-sm mt-1">{% trans "Create tiers like Bronze, Silver, Gold to reward loyal customers" %}</p>
+            <button class="btn color-primary mt-4"
+                hx-get="{% url 'loyalty:tier_create' %}"
+                hx-target="#main-content-area"
+                hx-push-url="true">
+                {% icon "add-outline" css_class="mr-1" %}
+                {% trans "Create First Tier" %}
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>

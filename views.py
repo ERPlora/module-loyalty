@@ -6,7 +6,7 @@ Member management, points, tiers, and rewards.
 import json
 import csv
 
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_http_methods, require_GET, require_POST
 from django.contrib import messages
@@ -16,59 +16,79 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from decimal import Decimal
 
+from apps.accounts.decorators import login_required
 from apps.core.htmx import htmx_view
+from apps.modules_runtime.navigation import with_module_nav
 
 from .models import (
-    LoyaltyConfig,
+    LoyaltySettings,
     LoyaltyTier,
     LoyaltyMember,
     PointsTransaction,
     Reward,
     RewardRedemption,
 )
+from .forms import (
+    LoyaltyMemberForm,
+    LoyaltyTierForm,
+    RewardForm,
+    MemberFilterForm,
+)
+
+
+def _hub_id(request):
+    return request.session.get('hub_id')
+
+
+def _employee(request):
+    from apps.accounts.models import LocalUser
+    uid = request.session.get('local_user_id')
+    if uid:
+        return LocalUser.objects.filter(id=uid).first()
+    return None
 
 
 # =============================================================================
 # Dashboard
 # =============================================================================
 
-@htmx_view(
-    'loyalty/pages/index.html',
-    'loyalty/partials/dashboard_content.html'
-)
+@login_required
+@with_module_nav('loyalty', 'dashboard')
+@htmx_view('loyalty/pages/index.html', 'loyalty/partials/dashboard_content.html')
 def dashboard(request):
-    """Loyalty program dashboard with statistics."""
-    config = LoyaltyConfig.get_config()
+    hub = _hub_id(request)
+    settings = LoyaltySettings.get_settings(hub)
 
-    # Statistics
-    total_members = LoyaltyMember.objects.filter(is_active=True).count()
-    total_points_issued = PointsTransaction.objects.filter(
-        transaction_type=PointsTransaction.Type.EARN
-    ).aggregate(total=Sum('points'))['total'] or 0
-    total_points_redeemed = PointsTransaction.objects.filter(
-        transaction_type=PointsTransaction.Type.REDEEM
-    ).aggregate(total=Sum('points'))['total'] or 0
-    active_rewards = Reward.objects.filter(is_active=True).count()
+    members_qs = LoyaltyMember.objects.filter(hub_id=hub, is_deleted=False)
+    transactions_qs = PointsTransaction.objects.filter(hub_id=hub, is_deleted=False)
 
-    # Recent activity
-    recent_transactions = PointsTransaction.objects.select_related(
-        'member', 'reward'
+    total_members = members_qs.filter(is_active=True).count()
+    total_points_issued = transactions_qs.filter(
+        transaction_type=PointsTransaction.Type.EARN,
+    ).aggregate(total=Sum('points'))['total'] or 0
+    total_points_redeemed = transactions_qs.filter(
+        transaction_type=PointsTransaction.Type.REDEEM,
+    ).aggregate(total=Sum('points'))['total'] or 0
+    active_rewards = Reward.objects.filter(
+        hub_id=hub, is_deleted=False, is_active=True,
+    ).count()
+
+    recent_transactions = transactions_qs.select_related(
+        'member', 'reward',
     ).order_by('-created_at')[:10]
 
-    # Top members
-    top_members = LoyaltyMember.objects.filter(
-        is_active=True
+    top_members = members_qs.filter(
+        is_active=True,
     ).order_by('-lifetime_points')[:5]
 
-    # Tier distribution
-    tier_stats = LoyaltyMember.objects.filter(
-        is_active=True
+    tier_stats = members_qs.filter(
+        is_active=True,
     ).values('tier__name', 'tier__color').annotate(
-        count=Count('id')
+        count=Count('id'),
     ).order_by('-count')
 
-    context = {
-        'config': config,
+    return {
+        'settings': settings,
         'total_members': total_members,
         'total_points_issued': total_points_issued,
         'total_points_redeemed': abs(total_points_redeemed),
@@ -78,135 +98,115 @@ def dashboard(request):
         'top_members': top_members,
         'tier_stats': tier_stats,
     }
-    return context
 
 
 # =============================================================================
 # Members
 # =============================================================================
 
-@htmx_view(
-    'loyalty/pages/members.html',
-    'loyalty/partials/members_list.html'
-)
+@login_required
+@with_module_nav('loyalty', 'members')
+@htmx_view('loyalty/pages/members.html', 'loyalty/partials/members_list.html')
 def members_list(request):
-    """List loyalty members with search and pagination."""
-    search = request.GET.get('search', '')
-    tier_filter = request.GET.get('tier', '')
-    status_filter = request.GET.get('status', 'active')
-    page = request.GET.get('page', 1)
+    hub = _hub_id(request)
+    filter_form = MemberFilterForm(request.GET)
 
-    members = LoyaltyMember.objects.select_related('tier')
+    members = LoyaltyMember.objects.filter(
+        hub_id=hub, is_deleted=False,
+    ).select_related('tier')
 
-    # Filters
-    if search:
-        members = members.filter(
-            Q(member_number__icontains=search) |
-            Q(card_number__icontains=search) |
-            Q(name__icontains=search) |
-            Q(email__icontains=search) |
-            Q(phone__icontains=search)
-        )
+    if filter_form.is_valid():
+        q = filter_form.cleaned_data.get('q')
+        tier = filter_form.cleaned_data.get('tier')
+        status = filter_form.cleaned_data.get('status')
 
-    if tier_filter:
-        members = members.filter(tier_id=tier_filter)
-
-    if status_filter == 'active':
-        members = members.filter(is_active=True)
-    elif status_filter == 'inactive':
-        members = members.filter(is_active=False)
+        if q:
+            members = members.filter(
+                Q(member_number__icontains=q) |
+                Q(card_number__icontains=q) |
+                Q(name__icontains=q) |
+                Q(email__icontains=q) |
+                Q(phone__icontains=q)
+            )
+        if tier:
+            members = members.filter(tier_id=tier)
+        if status == 'active':
+            members = members.filter(is_active=True)
+        elif status == 'inactive':
+            members = members.filter(is_active=False)
 
     members = members.order_by('-enrolled_at')
 
-    # Pagination
     paginator = Paginator(members, 20)
-    page_obj = paginator.get_page(page)
+    page_obj = paginator.get_page(request.GET.get('page', 1))
 
-    tiers = LoyaltyTier.objects.filter(is_active=True)
+    tiers = LoyaltyTier.objects.filter(
+        hub_id=hub, is_deleted=False, is_active=True,
+    )
 
-    context = {
+    return {
         'members': page_obj,
         'page_obj': page_obj,
-        'search': search,
-        'tier_filter': tier_filter,
-        'status_filter': status_filter,
+        'filter_form': filter_form,
         'tiers': tiers,
         'total_count': paginator.count,
     }
-    return context
 
 
-@htmx_view(
-    'loyalty/pages/member_form.html',
-    'loyalty/partials/member_form.html'
-)
+@login_required
+@with_module_nav('loyalty', 'members')
+@htmx_view('loyalty/pages/member_form.html', 'loyalty/partials/member_form.html')
 def member_create(request):
-    """Create a new loyalty member."""
-    tiers = LoyaltyTier.objects.filter(is_active=True).order_by('order')
+    hub = _hub_id(request)
+    tiers = LoyaltyTier.objects.filter(
+        hub_id=hub, is_deleted=False, is_active=True,
+    ).order_by('sort_order')
 
     if request.method == 'POST':
-        name = request.POST.get('name', '').strip()
-        email = request.POST.get('email', '').strip()
-        phone = request.POST.get('phone', '').strip()
-        card_number = request.POST.get('card_number', '').strip() or None
-        tier_id = request.POST.get('tier') or None
-        notes = request.POST.get('notes', '').strip()
+        form = LoyaltyMemberForm(request.POST)
+        if form.is_valid():
+            member = form.save(commit=False)
+            member.hub_id = hub
+            member.save()
 
-        if not name:
-            messages.error(request, _('Name is required'))
-            return {'tiers': tiers, 'form_data': request.POST}
+            # Welcome points
+            settings = LoyaltySettings.get_settings(hub)
+            if settings.welcome_points > 0:
+                member.add_points(
+                    settings.welcome_points,
+                    description=str(_('Welcome bonus')),
+                    employee=_employee(request),
+                )
 
-        # Check for duplicate card number
-        if card_number and LoyaltyMember.objects.filter(card_number=card_number).exists():
-            messages.error(request, _('Card number already exists'))
-            return {'tiers': tiers, 'form_data': request.POST}
+            messages.success(request, _('Member created successfully'))
+            return redirect('loyalty:member_detail', pk=member.pk)
+        return {'form': form, 'tiers': tiers, 'is_create': True}
 
-        member = LoyaltyMember.objects.create(
-            name=name,
-            email=email,
-            phone=phone,
-            card_number=card_number,
-            tier_id=tier_id,
-            notes=notes,
-        )
-
-        # Add welcome points
-        config = LoyaltyConfig.get_config()
-        if config.welcome_points > 0:
-            member.add_points(
-                config.welcome_points,
-                description=_('Welcome bonus')
-            )
-
-        messages.success(request, _('Member created successfully'))
-        return redirect('loyalty:member_detail', pk=member.pk)
-
-    context = {
-        'tiers': tiers,
-        'form_data': {},
-        'is_create': True,
-    }
-    return context
+    form = LoyaltyMemberForm()
+    return {'form': form, 'tiers': tiers, 'is_create': True}
 
 
-@htmx_view(
-    'loyalty/pages/member_detail.html',
-    'loyalty/partials/member_detail.html'
-)
+@login_required
+@with_module_nav('loyalty', 'members')
+@htmx_view('loyalty/pages/member_detail.html', 'loyalty/partials/member_detail.html')
 def member_detail(request, pk):
-    """View member details and transaction history."""
-    member = get_object_or_404(LoyaltyMember.objects.select_related('tier'), pk=pk)
+    hub = _hub_id(request)
+    member = get_object_or_404(
+        LoyaltyMember.objects.select_related('tier'),
+        pk=pk, hub_id=hub, is_deleted=False,
+    )
 
-    # Transaction history
-    transactions = member.transactions.select_related('reward').order_by('-created_at')[:50]
+    transactions = member.transactions.filter(
+        is_deleted=False,
+    ).select_related('reward').order_by('-created_at')[:50]
 
-    # Redemptions
-    redemptions = member.redemptions.select_related('reward').order_by('-created_at')[:10]
+    redemptions = member.redemptions.filter(
+        is_deleted=False,
+    ).select_related('reward').order_by('-created_at')[:10]
 
-    # Available rewards
-    config = LoyaltyConfig.get_config()
+    settings = LoyaltySettings.get_settings(hub)
     available_rewards = []
-    for reward in Reward.objects.filter(is_active=True):
+    for reward in Reward.objects.filter(hub_id=hub, is_deleted=False, is_active=True):
         can_redeem, reason = reward.can_redeem(member)
         available_rewards.append({
             'reward': reward,
@@ -214,74 +214,61 @@ def member_detail(request, pk):
             'reason': reason,
         })
 
-    context = {
+    return {
         'member': member,
         'transactions': transactions,
         'redemptions': redemptions,
         'available_rewards': available_rewards,
-        'config': config,
+        'settings': settings,
     }
-    return context
 
 
-@htmx_view(
-    'loyalty/pages/member_form.html',
-    'loyalty/partials/member_form.html'
-)
+@login_required
+@with_module_nav('loyalty', 'members')
+@htmx_view('loyalty/pages/member_form.html', 'loyalty/partials/member_form.html')
 def member_edit(request, pk):
-    """Edit loyalty member."""
-    member = get_object_or_404(LoyaltyMember, pk=pk)
-    tiers = LoyaltyTier.objects.filter(is_active=True).order_by('order')
+    hub = _hub_id(request)
+    member = get_object_or_404(
+        LoyaltyMember, pk=pk, hub_id=hub, is_deleted=False,
+    )
+    tiers = LoyaltyTier.objects.filter(
+        hub_id=hub, is_deleted=False, is_active=True,
+    ).order_by('sort_order')
 
     if request.method == 'POST':
-        member.name = request.POST.get('name', '').strip()
-        member.email = request.POST.get('email', '').strip()
-        member.phone = request.POST.get('phone', '').strip()
-        card_number = request.POST.get('card_number', '').strip() or None
-        member.tier_id = request.POST.get('tier') or None
-        member.notes = request.POST.get('notes', '').strip()
-        member.is_active = request.POST.get('is_active') == 'on'
+        form = LoyaltyMemberForm(request.POST, instance=member)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _('Member updated successfully'))
+            return redirect('loyalty:member_detail', pk=member.pk)
+        return {'form': form, 'member': member, 'tiers': tiers, 'is_create': False}
 
-        if not member.name:
-            messages.error(request, _('Name is required'))
-            return {'member': member, 'tiers': tiers, 'is_create': False}
-
-        # Check for duplicate card number
-        if card_number and LoyaltyMember.objects.filter(card_number=card_number).exclude(pk=pk).exists():
-            messages.error(request, _('Card number already exists'))
-            return {'member': member, 'tiers': tiers, 'is_create': False}
-
-        member.card_number = card_number
-        member.save()
-
-        messages.success(request, _('Member updated successfully'))
-        return redirect('loyalty:member_detail', pk=member.pk)
-
-    context = {
-        'member': member,
-        'tiers': tiers,
-        'is_create': False,
-    }
-    return context
+    form = LoyaltyMemberForm(instance=member)
+    return {'form': form, 'member': member, 'tiers': tiers, 'is_create': False}
 
 
+@login_required
 @require_POST
 def member_delete(request, pk):
-    """Delete (deactivate) a loyalty member."""
-    member = get_object_or_404(LoyaltyMember, pk=pk)
-    member.is_active = False
-    member.save()
-    messages.success(request, _('Member deactivated'))
+    hub = _hub_id(request)
+    member = get_object_or_404(
+        LoyaltyMember, pk=pk, hub_id=hub, is_deleted=False,
+    )
+    member.is_deleted = True
+    member.deleted_at = timezone.now()
+    member.save(update_fields=['is_deleted', 'deleted_at', 'updated_at'])
+    messages.success(request, _('Member deleted'))
     return redirect('loyalty:members_list')
 
 
-@htmx_view(
-    'loyalty/pages/member_add_points.html',
-    'loyalty/partials/member_add_points.html'
-)
+@login_required
+@with_module_nav('loyalty', 'members')
+@htmx_view('loyalty/pages/member_add_points.html', 'loyalty/partials/member_add_points.html')
 def member_add_points(request, pk):
-    """Manually add bonus points to a member."""
-    member = get_object_or_404(LoyaltyMember, pk=pk)
+    hub = _hub_id(request)
+    member = get_object_or_404(
+        LoyaltyMember, pk=pk, hub_id=hub, is_deleted=False,
+    )
 
     if request.method == 'POST':
         try:
@@ -292,10 +279,13 @@ def member_add_points(request, pk):
                 messages.error(request, _('Points must be positive'))
                 return {'member': member}
 
-            member.add_points(points, description=description or _('Manual adjustment'))
+            member.add_points(
+                points,
+                description=description or str(_('Manual adjustment')),
+                employee=_employee(request),
+            )
             messages.success(request, _('%(points)s points added') % {'points': points})
             return redirect('loyalty:member_detail', pk=member.pk)
-
         except ValueError:
             messages.error(request, _('Invalid points value'))
             return {'member': member}
@@ -303,17 +293,19 @@ def member_add_points(request, pk):
     return {'member': member}
 
 
-@htmx_view(
-    'loyalty/pages/member_redeem.html',
-    'loyalty/partials/member_redeem.html'
-)
+@login_required
+@with_module_nav('loyalty', 'members')
+@htmx_view('loyalty/pages/member_redeem.html', 'loyalty/partials/member_redeem.html')
 def member_redeem(request, pk):
-    """Redeem a reward for a member."""
-    member = get_object_or_404(LoyaltyMember, pk=pk)
+    hub = _hub_id(request)
+    member = get_object_or_404(
+        LoyaltyMember, pk=pk, hub_id=hub, is_deleted=False,
+    )
 
-    # Available rewards
     available_rewards = []
-    for reward in Reward.objects.filter(is_active=True).order_by('points_cost'):
+    for reward in Reward.objects.filter(
+        hub_id=hub, is_deleted=False, is_active=True,
+    ).order_by('points_cost'):
         can_redeem, reason = reward.can_redeem(member)
         available_rewards.append({
             'reward': reward,
@@ -323,15 +315,17 @@ def member_redeem(request, pk):
 
     if request.method == 'POST':
         reward_id = request.POST.get('reward_id')
-        reward = get_object_or_404(Reward, pk=reward_id)
+        reward = get_object_or_404(
+            Reward, pk=reward_id, hub_id=hub, is_deleted=False,
+        )
 
         can_redeem, reason = reward.can_redeem(member)
         if not can_redeem:
             messages.error(request, reason)
             return {'member': member, 'available_rewards': available_rewards}
 
-        # Create redemption
         redemption = RewardRedemption.objects.create(
+            hub_id=hub,
             member=member,
             reward=reward,
             points_used=reward.points_cost,
@@ -339,15 +333,14 @@ def member_redeem(request, pk):
             reward_value=reward.value,
         )
 
-        # Deduct points
         member.redeem_points(
             reward.points_cost,
             description=f'Reward: {reward.name}',
+            employee=_employee(request),
         )
 
-        # Update reward stats
         reward.times_redeemed += 1
-        reward.save()
+        reward.save(update_fields=['times_redeemed', 'updated_at'])
 
         messages.success(request, _('Reward redeemed! Code: %(code)s') % {'code': redemption.code})
         return redirect('loyalty:member_detail', pk=member.pk)
@@ -355,8 +348,9 @@ def member_redeem(request, pk):
     return {'member': member, 'available_rewards': available_rewards}
 
 
+@login_required
 def export_members_csv(request):
-    """Export members to CSV."""
+    hub = _hub_id(request)
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="loyalty_members.csv"'
 
@@ -364,10 +358,13 @@ def export_members_csv(request):
     writer.writerow([
         'Member Number', 'Card Number', 'Name', 'Email', 'Phone',
         'Tier', 'Points Balance', 'Lifetime Points', 'Total Spent',
-        'Visit Count', 'Enrolled At', 'Last Activity', 'Status'
+        'Visit Count', 'Enrolled At', 'Last Activity', 'Status',
     ])
 
-    members = LoyaltyMember.objects.select_related('tier').order_by('-enrolled_at')
+    members = LoyaltyMember.objects.filter(
+        hub_id=hub, is_deleted=False,
+    ).select_related('tier').order_by('-enrolled_at')
+
     for member in members:
         writer.writerow([
             member.member_number,
@@ -392,113 +389,83 @@ def export_members_csv(request):
 # Tiers
 # =============================================================================
 
-@htmx_view(
-    'loyalty/pages/tiers.html',
-    'loyalty/partials/tiers_list.html'
-)
+@login_required
+@with_module_nav('loyalty', 'tiers')
+@htmx_view('loyalty/pages/tiers.html', 'loyalty/partials/tiers_list.html')
 def tiers_list(request):
-    """List loyalty tiers."""
-    tiers = LoyaltyTier.objects.annotate(
-        member_count=Count('members', filter=Q(members__is_active=True))
-    ).order_by('order', 'min_points')
+    hub = _hub_id(request)
+    tiers = LoyaltyTier.objects.filter(
+        hub_id=hub, is_deleted=False,
+    ).annotate(
+        member_count=Count(
+            'members',
+            filter=Q(members__is_active=True, members__is_deleted=False),
+        ),
+    ).order_by('sort_order', 'min_points')
 
     return {'tiers': tiers}
 
 
-@htmx_view(
-    'loyalty/pages/tier_form.html',
-    'loyalty/partials/tier_form.html'
-)
+@login_required
+@with_module_nav('loyalty', 'tiers')
+@htmx_view('loyalty/pages/tier_form.html', 'loyalty/partials/tier_form.html')
 def tier_create(request):
-    """Create a new tier."""
+    hub = _hub_id(request)
+
     if request.method == 'POST':
-        name = request.POST.get('name', '').strip()
-        name_es = request.POST.get('name_es', '').strip()
-        description = request.POST.get('description', '').strip()
-        icon = request.POST.get('icon', 'star-outline').strip()
-        color = request.POST.get('color', '#cd7f32').strip()
-        min_points = int(request.POST.get('min_points', 0))
-        min_spent = Decimal(request.POST.get('min_spent', '0'))
-        points_multiplier = Decimal(request.POST.get('points_multiplier', '1.00'))
-        discount_percent = Decimal(request.POST.get('discount_percent', '0'))
-        free_shipping = request.POST.get('free_shipping') == 'on'
-        exclusive_offers = request.POST.get('exclusive_offers') == 'on'
-        order = int(request.POST.get('order', 0))
-        is_default = request.POST.get('is_default') == 'on'
+        form = LoyaltyTierForm(request.POST)
+        if form.is_valid():
+            tier = form.save(commit=False)
+            tier.hub_id = hub
+            tier.save()
+            messages.success(request, _('Tier created successfully'))
+            return redirect('loyalty:tiers_list')
+        return {'form': form, 'is_create': True}
 
-        if not name:
-            messages.error(request, _('Name is required'))
-            return {'form_data': request.POST, 'is_create': True}
-
-        LoyaltyTier.objects.create(
-            name=name,
-            name_es=name_es,
-            description=description,
-            icon=icon,
-            color=color,
-            min_points=min_points,
-            min_spent=min_spent,
-            points_multiplier=points_multiplier,
-            discount_percent=discount_percent,
-            free_shipping=free_shipping,
-            exclusive_offers=exclusive_offers,
-            order=order,
-            is_default=is_default,
-        )
-
-        messages.success(request, _('Tier created successfully'))
-        return redirect('loyalty:tiers_list')
-
-    return {'form_data': {}, 'is_create': True}
+    form = LoyaltyTierForm()
+    return {'form': form, 'is_create': True}
 
 
-@htmx_view(
-    'loyalty/pages/tier_form.html',
-    'loyalty/partials/tier_form.html'
-)
+@login_required
+@with_module_nav('loyalty', 'tiers')
+@htmx_view('loyalty/pages/tier_form.html', 'loyalty/partials/tier_form.html')
 def tier_edit(request, pk):
-    """Edit a tier."""
-    tier = get_object_or_404(LoyaltyTier, pk=pk)
+    hub = _hub_id(request)
+    tier = get_object_or_404(
+        LoyaltyTier, pk=pk, hub_id=hub, is_deleted=False,
+    )
 
     if request.method == 'POST':
-        tier.name = request.POST.get('name', '').strip()
-        tier.name_es = request.POST.get('name_es', '').strip()
-        tier.description = request.POST.get('description', '').strip()
-        tier.icon = request.POST.get('icon', 'star-outline').strip()
-        tier.color = request.POST.get('color', '#cd7f32').strip()
-        tier.min_points = int(request.POST.get('min_points', 0))
-        tier.min_spent = Decimal(request.POST.get('min_spent', '0'))
-        tier.points_multiplier = Decimal(request.POST.get('points_multiplier', '1.00'))
-        tier.discount_percent = Decimal(request.POST.get('discount_percent', '0'))
-        tier.free_shipping = request.POST.get('free_shipping') == 'on'
-        tier.exclusive_offers = request.POST.get('exclusive_offers') == 'on'
-        tier.order = int(request.POST.get('order', 0))
-        tier.is_default = request.POST.get('is_default') == 'on'
-        tier.is_active = request.POST.get('is_active') == 'on'
+        form = LoyaltyTierForm(request.POST, instance=tier)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _('Tier updated successfully'))
+            return redirect('loyalty:tiers_list')
+        return {'form': form, 'tier': tier, 'is_create': False}
 
-        if not tier.name:
-            messages.error(request, _('Name is required'))
-            return {'tier': tier, 'is_create': False}
-
-        tier.save()
-        messages.success(request, _('Tier updated successfully'))
-        return redirect('loyalty:tiers_list')
-
-    return {'tier': tier, 'is_create': False}
+    form = LoyaltyTierForm(instance=tier)
+    return {'form': form, 'tier': tier, 'is_create': False}
 
 
+@login_required
 @require_POST
 def tier_delete(request, pk):
-    """Delete a tier."""
-    tier = get_object_or_404(LoyaltyTier, pk=pk)
+    hub = _hub_id(request)
+    tier = get_object_or_404(
+        LoyaltyTier, pk=pk, hub_id=hub, is_deleted=False,
+    )
 
-    # Check for members in this tier
-    member_count = tier.members.filter(is_active=True).count()
+    member_count = tier.members.filter(is_active=True, is_deleted=False).count()
     if member_count > 0:
-        messages.error(request, _('Cannot delete tier with %(count)s active members') % {'count': member_count})
+        messages.error(
+            request,
+            _('Cannot delete tier with %(count)s active members') % {'count': member_count},
+        )
         return redirect('loyalty:tiers_list')
 
-    tier.delete()
+    tier.is_deleted = True
+    tier.deleted_at = timezone.now()
+    tier.save(update_fields=['is_deleted', 'deleted_at', 'updated_at'])
     messages.success(request, _('Tier deleted'))
     return redirect('loyalty:tiers_list')
 
@@ -507,153 +474,92 @@ def tier_delete(request, pk):
 # Rewards
 # =============================================================================
 
-@htmx_view(
-    'loyalty/pages/rewards.html',
-    'loyalty/partials/rewards_list.html'
-)
+@login_required
+@with_module_nav('loyalty', 'rewards')
+@htmx_view('loyalty/pages/rewards.html', 'loyalty/partials/rewards_list.html')
 def rewards_list(request):
-    """List rewards."""
+    hub = _hub_id(request)
     status = request.GET.get('status', 'active')
 
-    rewards = Reward.objects.all()
+    rewards = Reward.objects.filter(hub_id=hub, is_deleted=False)
     if status == 'active':
         rewards = rewards.filter(is_active=True)
     elif status == 'inactive':
         rewards = rewards.filter(is_active=False)
 
-    rewards = rewards.order_by('order', '-is_featured', 'points_cost')
+    rewards = rewards.order_by('sort_order', '-is_featured', 'points_cost')
 
     return {'rewards': rewards, 'status': status}
 
 
-@htmx_view(
-    'loyalty/pages/reward_form.html',
-    'loyalty/partials/reward_form.html'
-)
+@login_required
+@with_module_nav('loyalty', 'rewards')
+@htmx_view('loyalty/pages/reward_form.html', 'loyalty/partials/reward_form.html')
 def reward_create(request):
-    """Create a new reward."""
-    tiers = LoyaltyTier.objects.filter(is_active=True).order_by('order')
+    hub = _hub_id(request)
+    tiers = LoyaltyTier.objects.filter(
+        hub_id=hub, is_deleted=False, is_active=True,
+    ).order_by('sort_order')
 
     if request.method == 'POST':
-        name = request.POST.get('name', '').strip()
-        name_es = request.POST.get('name_es', '').strip()
-        description = request.POST.get('description', '').strip()
-        icon = request.POST.get('icon', 'gift-outline').strip()
-        points_cost = int(request.POST.get('points_cost', 0))
-        reward_type = request.POST.get('reward_type', Reward.RewardType.DISCOUNT_AMOUNT)
-        value = Decimal(request.POST.get('value', '0'))
-        product_id = request.POST.get('product_id') or None
-        product_name = request.POST.get('product_name', '').strip()
-        min_tier_id = request.POST.get('min_tier') or None
-        max_redemptions = request.POST.get('max_redemptions') or None
-        max_per_member = int(request.POST.get('max_per_member', 1))
-        order = int(request.POST.get('order', 0))
-        is_featured = request.POST.get('is_featured') == 'on'
-
-        if not name:
-            messages.error(request, _('Name is required'))
-            return {'form_data': request.POST, 'tiers': tiers, 'is_create': True}
-
-        if points_cost <= 0:
-            messages.error(request, _('Points cost must be positive'))
-            return {'form_data': request.POST, 'tiers': tiers, 'is_create': True}
-
-        reward = Reward.objects.create(
-            name=name,
-            name_es=name_es,
-            description=description,
-            icon=icon,
-            points_cost=points_cost,
-            reward_type=reward_type,
-            value=value,
-            product_id=product_id,
-            product_name=product_name,
-            min_tier_id=min_tier_id,
-            max_redemptions=int(max_redemptions) if max_redemptions else None,
-            max_per_member=max_per_member,
-            order=order,
-            is_featured=is_featured,
-        )
-
-        # Handle image upload
-        if 'image' in request.FILES:
-            reward.image = request.FILES['image']
+        form = RewardForm(request.POST, request.FILES)
+        if form.is_valid():
+            reward = form.save(commit=False)
+            reward.hub_id = hub
             reward.save()
+            messages.success(request, _('Reward created successfully'))
+            return redirect('loyalty:rewards_list')
+        return {'form': form, 'tiers': tiers, 'is_create': True, 'reward_types': Reward.RewardType.choices}
 
-        messages.success(request, _('Reward created successfully'))
-        return redirect('loyalty:rewards_list')
-
+    form = RewardForm()
     return {
-        'form_data': {},
+        'form': form,
         'tiers': tiers,
         'is_create': True,
         'reward_types': Reward.RewardType.choices,
     }
 
 
-@htmx_view(
-    'loyalty/pages/reward_detail.html',
-    'loyalty/partials/reward_detail.html'
-)
+@login_required
+@with_module_nav('loyalty', 'rewards')
+@htmx_view('loyalty/pages/reward_detail.html', 'loyalty/partials/reward_detail.html')
 def reward_detail(request, pk):
-    """View reward details."""
-    reward = get_object_or_404(Reward.objects.select_related('min_tier'), pk=pk)
+    hub = _hub_id(request)
+    reward = get_object_or_404(
+        Reward.objects.select_related('min_tier'),
+        pk=pk, hub_id=hub, is_deleted=False,
+    )
 
-    # Recent redemptions
     redemptions = RewardRedemption.objects.filter(
-        reward=reward
+        hub_id=hub, reward=reward, is_deleted=False,
     ).select_related('member').order_by('-created_at')[:20]
 
-    return {
-        'reward': reward,
-        'redemptions': redemptions,
-    }
+    return {'reward': reward, 'redemptions': redemptions}
 
 
-@htmx_view(
-    'loyalty/pages/reward_form.html',
-    'loyalty/partials/reward_form.html'
-)
+@login_required
+@with_module_nav('loyalty', 'rewards')
+@htmx_view('loyalty/pages/reward_form.html', 'loyalty/partials/reward_form.html')
 def reward_edit(request, pk):
-    """Edit a reward."""
-    reward = get_object_or_404(Reward, pk=pk)
-    tiers = LoyaltyTier.objects.filter(is_active=True).order_by('order')
+    hub = _hub_id(request)
+    reward = get_object_or_404(
+        Reward, pk=pk, hub_id=hub, is_deleted=False,
+    )
+    tiers = LoyaltyTier.objects.filter(
+        hub_id=hub, is_deleted=False, is_active=True,
+    ).order_by('sort_order')
 
     if request.method == 'POST':
-        reward.name = request.POST.get('name', '').strip()
-        reward.name_es = request.POST.get('name_es', '').strip()
-        reward.description = request.POST.get('description', '').strip()
-        reward.icon = request.POST.get('icon', 'gift-outline').strip()
-        reward.points_cost = int(request.POST.get('points_cost', 0))
-        reward.reward_type = request.POST.get('reward_type', Reward.RewardType.DISCOUNT_AMOUNT)
-        reward.value = Decimal(request.POST.get('value', '0'))
-        reward.product_id = request.POST.get('product_id') or None
-        reward.product_name = request.POST.get('product_name', '').strip()
-        reward.min_tier_id = request.POST.get('min_tier') or None
-        max_redemptions = request.POST.get('max_redemptions')
-        reward.max_redemptions = int(max_redemptions) if max_redemptions else None
-        reward.max_per_member = int(request.POST.get('max_per_member', 1))
-        reward.order = int(request.POST.get('order', 0))
-        reward.is_featured = request.POST.get('is_featured') == 'on'
-        reward.is_active = request.POST.get('is_active') == 'on'
+        form = RewardForm(request.POST, request.FILES, instance=reward)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _('Reward updated successfully'))
+            return redirect('loyalty:reward_detail', pk=reward.pk)
+        return {'form': form, 'reward': reward, 'tiers': tiers, 'is_create': False, 'reward_types': Reward.RewardType.choices}
 
-        if not reward.name:
-            messages.error(request, _('Name is required'))
-            return {'reward': reward, 'tiers': tiers, 'is_create': False}
-
-        if reward.points_cost <= 0:
-            messages.error(request, _('Points cost must be positive'))
-            return {'reward': reward, 'tiers': tiers, 'is_create': False}
-
-        # Handle image upload
-        if 'image' in request.FILES:
-            reward.image = request.FILES['image']
-
-        reward.save()
-        messages.success(request, _('Reward updated successfully'))
-        return redirect('loyalty:reward_detail', pk=reward.pk)
-
+    form = RewardForm(instance=reward)
     return {
+        'form': form,
         'reward': reward,
         'tiers': tiers,
         'is_create': False,
@@ -661,13 +567,17 @@ def reward_edit(request, pk):
     }
 
 
+@login_required
 @require_POST
 def reward_delete(request, pk):
-    """Delete a reward (soft delete - deactivate)."""
-    reward = get_object_or_404(Reward, pk=pk)
-    reward.is_active = False
-    reward.save()
-    messages.success(request, _('Reward deactivated'))
+    hub = _hub_id(request)
+    reward = get_object_or_404(
+        Reward, pk=pk, hub_id=hub, is_deleted=False,
+    )
+    reward.is_deleted = True
+    reward.deleted_at = timezone.now()
+    reward.save(update_fields=['is_deleted', 'deleted_at', 'updated_at'])
+    messages.success(request, _('Reward deleted'))
     return redirect('loyalty:rewards_list')
 
 
@@ -675,17 +585,17 @@ def reward_delete(request, pk):
 # Transactions
 # =============================================================================
 
-@htmx_view(
-    'loyalty/pages/transactions.html',
-    'loyalty/partials/transactions_list.html'
-)
+@login_required
+@with_module_nav('loyalty', 'transactions')
+@htmx_view('loyalty/pages/transactions.html', 'loyalty/partials/transactions_list.html')
 def transactions_list(request):
-    """List all point transactions."""
+    hub = _hub_id(request)
     search = request.GET.get('search', '')
     type_filter = request.GET.get('type', '')
-    page = request.GET.get('page', 1)
 
-    transactions = PointsTransaction.objects.select_related('member', 'reward')
+    transactions = PointsTransaction.objects.filter(
+        hub_id=hub, is_deleted=False,
+    ).select_related('member', 'reward')
 
     if search:
         transactions = transactions.filter(
@@ -699,9 +609,8 @@ def transactions_list(request):
 
     transactions = transactions.order_by('-created_at')
 
-    # Pagination
     paginator = Paginator(transactions, 50)
-    page_obj = paginator.get_page(page)
+    page_obj = paginator.get_page(request.GET.get('page', 1))
 
     return {
         'transactions': page_obj,
@@ -716,106 +625,97 @@ def transactions_list(request):
 # Settings
 # =============================================================================
 
-@htmx_view(
-    'loyalty/pages/settings.html',
-    'loyalty/partials/settings_form.html'
-)
+@login_required
+@with_module_nav('loyalty', 'settings')
+@htmx_view('loyalty/pages/settings.html', 'loyalty/partials/settings_form.html')
 def settings_view(request):
-    """Loyalty program settings."""
-    config = LoyaltyConfig.get_config()
-    return {'config': config}
+    hub = _hub_id(request)
+    settings = LoyaltySettings.get_settings(hub)
+    return {'settings': settings}
 
 
+@login_required
 @require_POST
 def settings_save(request):
-    """Save loyalty settings via JSON."""
+    hub = _hub_id(request)
     try:
         data = json.loads(request.body)
-        config = LoyaltyConfig.get_config()
+        settings = LoyaltySettings.get_settings(hub)
 
-        # Program Settings
-        config.program_name = data.get('program_name', 'Loyalty Program')
-        config.program_enabled = data.get('program_enabled', True)
+        settings.program_name = data.get('program_name', 'Loyalty Program')
+        settings.program_enabled = data.get('program_enabled', True)
+        settings.points_per_currency = Decimal(str(data.get('points_per_currency', '1.00')))
+        settings.points_value = Decimal(str(data.get('points_value', '0.01')))
+        settings.minimum_redemption = int(data.get('minimum_redemption', 100))
+        settings.points_expire = data.get('points_expire', False)
+        settings.expiry_months = int(data.get('expiry_months', 12))
+        settings.auto_enroll = data.get('auto_enroll', True)
+        settings.welcome_points = int(data.get('welcome_points', 0))
+        settings.show_points_on_receipt = data.get('show_points_on_receipt', True)
+        settings.show_available_rewards = data.get('show_available_rewards', True)
 
-        # Points Configuration
-        config.points_per_currency = Decimal(str(data.get('points_per_currency', '1.00')))
-        config.points_value = Decimal(str(data.get('points_value', '0.01')))
-        config.minimum_redemption = int(data.get('minimum_redemption', 100))
-
-        # Points Expiry
-        config.points_expire = data.get('points_expire', False)
-        config.expiry_months = int(data.get('expiry_months', 12))
-
-        # Enrollment
-        config.auto_enroll = data.get('auto_enroll', True)
-        config.welcome_points = int(data.get('welcome_points', 0))
-
-        # Display Options
-        config.show_points_on_receipt = data.get('show_points_on_receipt', True)
-        config.show_available_rewards = data.get('show_available_rewards', True)
-
-        config.save()
-        return JsonResponse({'success': True, 'message': _('Settings saved')})
+        settings.save()
+        return JsonResponse({'success': True, 'message': str(_('Settings saved'))})
 
     except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': _('Invalid JSON')}, status=400)
+        return JsonResponse({'success': False, 'error': str(_('Invalid JSON'))}, status=400)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
+@login_required
 @require_POST
 def settings_toggle(request):
-    """HTMX: Toggle a single boolean setting and return success response."""
-    # Support both 'name'/'value' (new components) and 'setting_name'/'setting_value' (legacy)
+    hub = _hub_id(request)
     name = request.POST.get('name') or request.POST.get('setting_name')
     value = request.POST.get('value', request.POST.get('setting_value', 'false'))
     setting_value = value == 'true' or value is True
 
-    config = LoyaltyConfig.get_config()
+    settings = LoyaltySettings.get_settings(hub)
 
     boolean_settings = [
         'program_enabled', 'points_expire', 'auto_enroll',
-        'show_points_on_receipt', 'show_available_rewards'
+        'show_points_on_receipt', 'show_available_rewards',
     ]
 
     if not name or name not in boolean_settings:
         return JsonResponse({'success': False, 'error': 'Invalid setting'}, status=400)
 
-    setattr(config, name, setting_value)
-    config.save()
+    setattr(settings, name, setting_value)
+    settings.save(update_fields=[name, 'updated_at'])
 
     response = HttpResponse(status=204)
     response['HX-Trigger'] = json.dumps({
-        'showToast': {'message': str(_('Setting saved')), 'color': 'success'}
+        'showToast': {'message': str(_('Setting saved')), 'color': 'success'},
     })
     return response
 
 
+@login_required
 @require_POST
 def settings_reset(request):
-    """HTMX: Reset all settings to defaults and return settings page."""
-    config = LoyaltyConfig.get_config()
+    hub = _hub_id(request)
+    settings = LoyaltySettings.get_settings(hub)
 
-    # Reset to defaults
-    config.program_name = 'Loyalty Program'
-    config.program_enabled = True
-    config.points_per_currency = Decimal('1.00')
-    config.points_value = Decimal('0.01')
-    config.minimum_redemption = 100
-    config.points_expire = False
-    config.expiry_months = 12
-    config.auto_enroll = True
-    config.welcome_points = 0
-    config.show_points_on_receipt = True
-    config.show_available_rewards = True
-    config.save()
+    settings.program_name = 'Loyalty Program'
+    settings.program_enabled = True
+    settings.points_per_currency = Decimal('1.00')
+    settings.points_value = Decimal('0.01')
+    settings.minimum_redemption = 100
+    settings.points_expire = False
+    settings.expiry_months = 12
+    settings.auto_enroll = True
+    settings.welcome_points = 0
+    settings.show_points_on_receipt = True
+    settings.show_available_rewards = True
+    settings.save()
 
-    # Return the settings page content with toast
+    from django.shortcuts import render
     response = render(request, 'loyalty/partials/settings_form.html', {
-        'config': config,
+        'settings': settings,
     })
     response['HX-Trigger'] = json.dumps({
-        'showToast': {'message': str(_('Settings reset to defaults')), 'color': 'warning'}
+        'showToast': {'message': str(_('Settings reset to defaults')), 'color': 'warning'},
     })
     return response
 
@@ -824,16 +724,17 @@ def settings_reset(request):
 # API Endpoints (for POS integration)
 # =============================================================================
 
+@login_required
 @require_GET
 def api_member_search(request):
-    """Search for members by card number, phone, or member number."""
+    hub = _hub_id(request)
     query = request.GET.get('q', '').strip()
 
     if len(query) < 2:
         return JsonResponse({'members': []})
 
     members = LoyaltyMember.objects.filter(
-        is_active=True
+        hub_id=hub, is_deleted=False, is_active=True,
     ).filter(
         Q(member_number__icontains=query) |
         Q(card_number__icontains=query) |
@@ -842,7 +743,7 @@ def api_member_search(request):
     ).select_related('tier')[:10]
 
     results = [{
-        'id': m.id,
+        'id': str(m.pk),
         'member_number': m.member_number,
         'card_number': m.card_number,
         'name': m.name,
@@ -856,39 +757,48 @@ def api_member_search(request):
     return JsonResponse({'members': results})
 
 
+@login_required
 @require_GET
 def api_member_balance(request, pk):
-    """Get member's current balance and tier info."""
-    member = get_object_or_404(LoyaltyMember.objects.select_related('tier'), pk=pk, is_active=True)
-    config = LoyaltyConfig.get_config()
+    hub = _hub_id(request)
+    member = get_object_or_404(
+        LoyaltyMember.objects.select_related('tier'),
+        pk=pk, hub_id=hub, is_deleted=False, is_active=True,
+    )
+    settings = LoyaltySettings.get_settings(hub)
 
     return JsonResponse({
-        'id': member.id,
+        'id': str(member.pk),
         'member_number': member.member_number,
         'name': member.name,
         'points_balance': member.points_balance,
-        'points_value': float(config.calculate_points_value(member.points_balance)),
+        'points_value': float(settings.calculate_points_value(member.points_balance)),
         'tier': {
-            'name': member.tier.name if member.tier else None,
-            'color': member.tier.color if member.tier else None,
-            'discount_percent': float(member.tier.discount_percent) if member.tier else 0,
-            'points_multiplier': float(member.tier.points_multiplier) if member.tier else 1,
+            'name': member.tier.name,
+            'color': member.tier.color,
+            'discount_percent': float(member.tier.discount_percent),
+            'points_multiplier': float(member.tier.points_multiplier),
         } if member.tier else None,
     })
 
 
+@login_required
 @require_GET
 def api_available_rewards(request, member_id):
-    """Get available rewards for a member."""
-    member = get_object_or_404(LoyaltyMember, pk=member_id, is_active=True)
+    hub = _hub_id(request)
+    member = get_object_or_404(
+        LoyaltyMember, pk=member_id, hub_id=hub, is_deleted=False, is_active=True,
+    )
 
-    rewards = Reward.objects.filter(is_active=True).order_by('points_cost')
+    rewards = Reward.objects.filter(
+        hub_id=hub, is_deleted=False, is_active=True,
+    ).order_by('points_cost')
+
     results = []
-
     for reward in rewards:
         can_redeem, reason = reward.can_redeem(member)
         results.append({
-            'id': reward.id,
+            'id': str(reward.pk),
             'name': reward.name,
             'points_cost': reward.points_cost,
             'reward_type': reward.reward_type,

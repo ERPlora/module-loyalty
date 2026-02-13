@@ -1,113 +1,112 @@
-{% load i18n component_tags %}
+{% load i18n djicons %}
 
-{% component "page"
-    title=_("Points History")
-    subtitle=_("All points transactions")
-    module_id="loyalty"
-    tabbar_view="transactions" %}
+<div class="p-4">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold">{% trans "Points History" %}</h1>
+        <p class="text-sm mt-2 text-muted">{% trans "All points transactions across members" %}</p>
+    </div>
 
-    {% fill "content" %}
-        <!-- Filters -->
-        <ion-card class="mb-4">
-            <ion-card-content>
-                <form
-                    hx-get="{% url 'loyalty:transactions_list' %}"
-                    hx-target="#main-content-area"
-                    hx-push-url="true"
-                    class="flex flex-wrap gap-4 items-end">
-
-                    <div class="flex-1 min-w-[200px]">
-                        <ion-label class="text-sm text-gray-600">{% trans "Search" %}</ion-label>
-                        <ion-input
-                            name="search"
-                            value="{{ search }}"
-                            placeholder="{% trans 'Member name or number...' %}"
-                            class="mt-1">
-                        </ion-input>
-                    </div>
-
-                    <div class="min-w-[150px]">
-                        <ion-label class="text-sm text-gray-600">{% trans "Type" %}</ion-label>
-                        <ion-select name="type" value="{{ type_filter }}" interface="popover" class="mt-1">
-                            <ion-select-option value="">{% trans "All Types" %}</ion-select-option>
-                            {% for value, label in transaction_types %}
-                            <ion-select-option value="{{ value }}">{{ label }}</ion-select-option>
-                            {% endfor %}
-                        </ion-select>
-                    </div>
-
-                    <ion-button type="submit">
-                        <ion-icon slot="icon-only" name="search"></ion-icon>
-                    </ion-button>
-                </form>
-            </ion-card-content>
-        </ion-card>
-
-        <!-- Transactions List -->
-        <ion-card>
-            <ion-card-content class="p-0">
-                <ion-list>
-                    {% for tx in transactions %}
-                    <ion-item>
-                        <ion-icon
-                            slot="start"
-                            name="{% if tx.points > 0 %}add-circle{% else %}remove-circle{% endif %}"
-                            class="{% if tx.points > 0 %}text-green-500{% else %}text-red-500{% endif %} text-2xl">
-                        </ion-icon>
-                        <ion-label>
-                            <h2>{{ tx.member.name }}</h2>
-                            <h3>{{ tx.get_transaction_type_display }}</h3>
-                            <p>{{ tx.description }}</p>
-                            <p class="text-xs text-gray-400">{{ tx.created_at|date:"d M Y H:i" }}</p>
-                        </ion-label>
-                        <div slot="end" class="text-right">
-                            <p class="text-xl font-bold {% if tx.points > 0 %}text-green-600{% else %}text-red-600{% endif %}">
-                                {% if tx.points > 0 %}+{% endif %}{{ tx.points }}
-                            </p>
-                            <p class="text-sm text-gray-500">{% trans "Balance" %}: {{ tx.balance_after }}</p>
+    <!-- Search + Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form hx-get="{% url 'loyalty:transactions_list' %}"
+                  hx-target="#main-content-area"
+                  hx-push-url="true"
+                  hx-trigger="submit, change from:select">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="md:col-span-2">
+                        <div class="input-group">
+                            <span class="input-group__start">{% icon "search-outline" %}</span>
+                            <input type="text" name="search" value="{{ search }}"
+                                placeholder="{% trans 'Member name or number...' %}"
+                                class="input"
+                                hx-trigger="keyup changed delay:400ms">
                         </div>
-                    </ion-item>
-                    {% empty %}
-                    <ion-item>
-                        <ion-label class="text-center text-gray-500 py-8">
-                            <ion-icon name="list-outline" class="text-4xl mb-2 block"></ion-icon>
-                            {% trans "No transactions found" %}
-                        </ion-label>
-                    </ion-item>
-                    {% endfor %}
-                </ion-list>
-            </ion-card-content>
-        </ion-card>
+                    </div>
+                    <select name="type" class="select">
+                        <option value="">{% trans "All Types" %}</option>
+                        {% for value, label in transaction_types %}
+                        <option value="{{ value }}" {% if type_filter == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        <!-- Pagination -->
-        {% if page_obj.has_other_pages %}
-        <div class="flex justify-center mt-4 gap-2">
-            {% if page_obj.has_previous %}
-            <ion-button
-                fill="outline"
-                hx-get="{% url 'loyalty:transactions_list' %}?page={{ page_obj.previous_page_number }}&search={{ search }}&type={{ type_filter }}"
-                hx-target="#main-content-area"
-                hx-push-url="true">
-                <ion-icon slot="start" name="chevron-back"></ion-icon>
-                {% trans "Previous" %}
-            </ion-button>
-            {% endif %}
-
-            <span class="flex items-center px-4 text-gray-600">
-                {% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}
-            </span>
-
-            {% if page_obj.has_next %}
-            <ion-button
-                fill="outline"
-                hx-get="{% url 'loyalty:transactions_list' %}?page={{ page_obj.next_page_number }}&search={{ search }}&type={{ type_filter }}"
-                hx-target="#main-content-area"
-                hx-push-url="true">
-                {% trans "Next" %}
-                <ion-icon slot="end" name="chevron-forward"></ion-icon>
-            </ion-button>
+    <!-- Transactions -->
+    <div class="card">
+        <div class="card-body p-0">
+            {% if transactions %}
+            <div class="list">
+                {% for tx in transactions %}
+                <div class="list-item">
+                    <div class="list-item-start">
+                        {% if tx.points > 0 %}
+                        {% icon "add-circle" css_class="text-xl text-success" %}
+                        {% elif tx.transaction_type == 'tier' %}
+                        {% icon "ribbon" css_class="text-xl text-warning" %}
+                        {% else %}
+                        {% icon "remove-circle" css_class="text-xl text-error" %}
+                        {% endif %}
+                    </div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">
+                            <a hx-get="{% url 'loyalty:member_detail' pk=tx.member.pk %}"
+                               hx-target="#main-content-area"
+                               hx-push-url="true"
+                               class="hover:text-primary cursor-pointer">{{ tx.member.name }}</a>
+                        </div>
+                        <div class="list-item-note">
+                            <span class="badge badge-sm color-{% if tx.transaction_type == 'earn' %}success{% elif tx.transaction_type == 'redeem' %}error{% elif tx.transaction_type == 'bonus' %}primary{% elif tx.transaction_type == 'tier' %}warning{% else %}medium{% endif %} mr-1">
+                                {{ tx.get_transaction_type_display }}
+                            </span>
+                            {{ tx.description }}
+                        </div>
+                        <div class="text-xs text-muted">{{ tx.created_at|date:"d/m/Y H:i" }}</div>
+                    </div>
+                    <div class="list-item-end text-right">
+                        {% if tx.points != 0 %}
+                        <div class="text-lg font-bold {% if tx.points > 0 %}text-success{% else %}text-error{% endif %}">
+                            {% if tx.points > 0 %}+{% endif %}{{ tx.points }}
+                        </div>
+                        {% endif %}
+                        <div class="text-xs text-muted">{% trans "Bal" %}: {{ tx.balance_after }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12 text-muted">
+                {% icon "list-outline" css_class="text-5xl block mx-auto mb-2" %}
+                <p>{% trans "No transactions found" %}</p>
+            </div>
             {% endif %}
         </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-center items-center mt-4 gap-2">
+        {% if page_obj.has_previous %}
+        <button class="btn btn-sm btn-outline"
+            hx-get="{% url 'loyalty:transactions_list' %}?page={{ page_obj.previous_page_number }}&search={{ search }}&type={{ type_filter }}"
+            hx-target="#main-content-area"
+            hx-push-url="true">
+            {% icon "chevron-back" %}
+        </button>
         {% endif %}
-    {% endfill %}
-{% endcomponent %}
+        <span class="text-sm text-muted px-3">
+            {% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}
+        </span>
+        {% if page_obj.has_next %}
+        <button class="btn btn-sm btn-outline"
+            hx-get="{% url 'loyalty:transactions_list' %}?page={{ page_obj.next_page_number }}&search={{ search }}&type={{ type_filter }}"
+            hx-target="#main-content-area"
+            hx-push-url="true">
+            {% icon "chevron-forward" %}
+        </button>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>

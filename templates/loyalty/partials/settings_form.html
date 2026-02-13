@@ -1,6 +1,5 @@
-{% load static i18n ui component_tags %}
+{% load i18n djicons %}
 
-{# Toast listener for HX-Trigger events #}
 <script>
 (function() {
     if (!window._loyaltyToastListenerAdded) {
@@ -8,140 +7,177 @@
         document.body.addEventListener('showToast', function(e) {
             const detail = e.detail || {};
             const message = detail.message || 'Done';
-            const color = detail.color || 'success';
-
-            const toast = document.createElement('ion-toast');
-            toast.message = message;
-            toast.duration = 2000;
-            toast.position = 'top';
-            toast.color = color;
-            document.body.appendChild(toast);
-            toast.present();
+            const type = detail.color || 'success';
+            if (window.UX && window.UX.toast) {
+                window.UX.toast(message, { type: type });
+            }
         });
     }
 })();
 </script>
 
-{% component "settings_page"
-    title=_("Loyalty Program Settings")
-    subtitle=_("Configure your loyalty program")
-    module_id="loyalty"
-    tabbar_view="settings" %}
+<div class="p-4">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold">{% trans "Loyalty Settings" %}</h1>
+        <p class="text-sm mt-2 text-muted">{% trans "Configure your loyalty program" %}</p>
+    </div>
 
-    {% fill "settings" %}
-        {% csrf_token %}
+    {% csrf_token %}
 
-        {% component "setting_section" title=_("Program Settings") %}
-            {% component "setting_input"
-                name="program_name"
-                title=_("Program Name")
-                description=_("Display name for your loyalty program")
-                value=config.program_name
-                type="text"
-                placeholder="Loyalty Program" %}{% endcomponent %}
+    <!-- Program Settings -->
+    <div class="card mb-4">
+        <div class="card-header"><h3 class="card-title">{% trans "Program Settings" %}</h3></div>
+        <div class="card-body space-y-4">
+            <div>
+                <label class="block text-sm font-medium mb-1">{% trans "Program Name" %}</label>
+                <input type="text" name="program_name" value="{{ settings.program_name }}"
+                    class="input w-full" placeholder="Loyalty Program">
+                <p class="text-xs text-muted mt-1">{% trans "Display name for your loyalty program" %}</p>
+            </div>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-semibold">{% trans "Program Enabled" %}</h4>
+                    <p class="text-sm text-muted">{% trans "Enable or disable the loyalty program" %}</p>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox" name="program_enabled" {% if settings.program_enabled %}checked{% endif %}
+                        hx-post="{% url 'loyalty:settings_toggle' %}"
+                        hx-vals='{"name": "program_enabled", "value": "true"}'
+                        hx-swap="none"
+                        hx-include="[name='csrfmiddlewaretoken']"
+                        onchange="this.closest('form, div').querySelector('[name=value]') || (htmx.values(this).value = this.checked ? 'true' : 'false')">
+                    
+                </label>
+            </div>
+        </div>
+    </div>
 
-            {% component "setting_toggle"
-                name="program_enabled"
-                title=_("Program Enabled")
-                description=_("Enable or disable the loyalty program")
-                checked=config.program_enabled
-                hx_post="/m/loyalty/settings/toggle/" %}{% endcomponent %}
-        {% endcomponent %}
+    <!-- Points Configuration -->
+    <div class="card mb-4">
+        <div class="card-header"><h3 class="card-title">{% trans "Points Configuration" %}</h3></div>
+        <div class="card-body space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">{% trans "Points per Currency Unit" %}</label>
+                    <input type="number" name="points_per_currency" value="{{ settings.points_per_currency }}"
+                        class="input w-full" min="0" step="0.01">
+                    <p class="text-xs text-muted mt-1">{% trans "Points earned per currency unit spent" %}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">{% trans "Point Value" %}</label>
+                    <input type="number" name="points_value" value="{{ settings.points_value }}"
+                        class="input w-full" min="0" step="0.0001">
+                    <p class="text-xs text-muted mt-1">{% trans "Currency value of each point when redeemed" %}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">{% trans "Min. Redemption" %}</label>
+                    <input type="number" name="minimum_redemption" value="{{ settings.minimum_redemption }}"
+                        class="input w-full" min="0">
+                    <p class="text-xs text-muted mt-1">{% trans "Minimum points to redeem" %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        {% component "setting_section" title=_("Points Configuration") %}
-            {% component "setting_input"
-                name="points_per_currency"
-                title=_("Points per Currency Unit")
-                description=_("Points earned per currency unit spent (e.g., 1 point per euro)")
-                value=config.points_per_currency
-                type="number"
-                min=0
-                step="0.01" %}{% endcomponent %}
+    <!-- Points Expiry -->
+    <div class="card mb-4">
+        <div class="card-header"><h3 class="card-title">{% trans "Points Expiry" %}</h3></div>
+        <div class="card-body space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-semibold">{% trans "Points Expire" %}</h4>
+                    <p class="text-sm text-muted">{% trans "Enable expiration of points after a period" %}</p>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox" name="points_expire" {% if settings.points_expire %}checked{% endif %}
+                        hx-post="{% url 'loyalty:settings_toggle' %}"
+                        hx-vals='{"name": "points_expire"}'
+                        hx-swap="none"
+                        hx-include="[name='csrfmiddlewaretoken']">
+                    
+                </label>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">{% trans "Expiry Period (Months)" %}</label>
+                <input type="number" name="expiry_months" value="{{ settings.expiry_months }}"
+                    class="input w-full" min="1" max="120">
+            </div>
+        </div>
+    </div>
 
-            {% component "setting_input"
-                name="points_value"
-                title=_("Point Value")
-                description=_("Currency value of each point when redeemed")
-                value=config.points_value
-                type="number"
-                min=0
-                step="0.0001" %}{% endcomponent %}
+    <!-- Enrollment -->
+    <div class="card mb-4">
+        <div class="card-header"><h3 class="card-title">{% trans "Enrollment" %}</h3></div>
+        <div class="card-body space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-semibold">{% trans "Auto-Enroll Customers" %}</h4>
+                    <p class="text-sm text-muted">{% trans "Automatically enroll customers on their first purchase" %}</p>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox" name="auto_enroll" {% if settings.auto_enroll %}checked{% endif %}
+                        hx-post="{% url 'loyalty:settings_toggle' %}"
+                        hx-vals='{"name": "auto_enroll"}'
+                        hx-swap="none"
+                        hx-include="[name='csrfmiddlewaretoken']">
+                    
+                </label>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">{% trans "Welcome Points" %}</label>
+                <input type="number" name="welcome_points" value="{{ settings.welcome_points }}"
+                    class="input w-full" min="0">
+                <p class="text-xs text-muted mt-1">{% trans "Bonus points given when a customer enrolls" %}</p>
+            </div>
+        </div>
+    </div>
 
-            {% component "setting_input"
-                name="minimum_redemption"
-                title=_("Minimum Points for Redemption")
-                description=_("Minimum points required to redeem rewards")
-                value=config.minimum_redemption
-                type="number"
-                min=0 %}{% endcomponent %}
-        {% endcomponent %}
+    <!-- Display Options -->
+    <div class="card mb-4">
+        <div class="card-header"><h3 class="card-title">{% trans "Display Options" %}</h3></div>
+        <div class="card-body space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-semibold">{% trans "Show Points on Receipt" %}</h4>
+                    <p class="text-sm text-muted">{% trans "Display earned points on sale receipts" %}</p>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox" name="show_points_on_receipt" {% if settings.show_points_on_receipt %}checked{% endif %}
+                        hx-post="{% url 'loyalty:settings_toggle' %}"
+                        hx-vals='{"name": "show_points_on_receipt"}'
+                        hx-swap="none"
+                        hx-include="[name='csrfmiddlewaretoken']">
+                    
+                </label>
+            </div>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-semibold">{% trans "Show Available Rewards" %}</h4>
+                    <p class="text-sm text-muted">{% trans "Show available rewards at checkout" %}</p>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox" name="show_available_rewards" {% if settings.show_available_rewards %}checked{% endif %}
+                        hx-post="{% url 'loyalty:settings_toggle' %}"
+                        hx-vals='{"name": "show_available_rewards"}'
+                        hx-swap="none"
+                        hx-include="[name='csrfmiddlewaretoken']">
+                    
+                </label>
+            </div>
+        </div>
+    </div>
 
-        {% component "setting_section" title=_("Points Expiry") %}
-            {% component "setting_toggle"
-                name="points_expire"
-                title=_("Points Expire")
-                description=_("Enable expiration of points after a period")
-                checked=config.points_expire
-                color="warning"
-                hx_post="/m/loyalty/settings/toggle/" %}{% endcomponent %}
-
-            {% component "setting_input"
-                name="expiry_months"
-                title=_("Expiry Period (Months)")
-                description=_("Number of months before points expire")
-                value=config.expiry_months
-                type="number"
-                min=1
-                max=120 %}{% endcomponent %}
-        {% endcomponent %}
-
-        {% component "setting_section" title=_("Enrollment") %}
-            {% component "setting_toggle"
-                name="auto_enroll"
-                title=_("Auto-Enroll Customers")
-                description=_("Automatically enroll customers on their first purchase")
-                checked=config.auto_enroll
-                hx_post="/m/loyalty/settings/toggle/" %}{% endcomponent %}
-
-            {% component "setting_input"
-                name="welcome_points"
-                title=_("Welcome Points")
-                description=_("Bonus points given when a customer enrolls")
-                value=config.welcome_points
-                type="number"
-                min=0 %}{% endcomponent %}
-        {% endcomponent %}
-
-        {% component "setting_section" title=_("Display Options") %}
-            {% component "setting_toggle"
-                name="show_points_on_receipt"
-                title=_("Show Points on Receipt")
-                description=_("Display earned points on sale receipts")
-                checked=config.show_points_on_receipt
-                hx_post="/m/loyalty/settings/toggle/" %}{% endcomponent %}
-
-            {% component "setting_toggle"
-                name="show_available_rewards"
-                title=_("Show Available Rewards")
-                description=_("Show available rewards at checkout")
-                checked=config.show_available_rewards
-                hx_post="/m/loyalty/settings/toggle/" %}{% endcomponent %}
-        {% endcomponent %}
-    {% endfill %}
-
-    {% fill "actions" %}
-        <div class="setting-actions mt-lg pt-md">
-            <ion-button
-                color="medium"
-                fill="outline"
-                expand="block"
+    <!-- Actions -->
+    <div class="card">
+        <div class="card-body">
+            <button class="btn btn-outline w-full"
                 hx-post="{% url 'loyalty:settings_reset' %}"
                 hx-confirm="{% trans 'Reset all settings to defaults?' %}"
                 hx-target="#main-content-area"
                 hx-include="[name='csrfmiddlewaretoken']">
-                <ion-icon slot="start" name="refresh-outline"></ion-icon>
+                {% icon "refresh-outline" css_class="mr-1" %}
                 {% trans "Reset to Defaults" %}
-            </ion-button>
+            </button>
         </div>
-    {% endfill %}
-{% endcomponent %}
+    </div>
+</div>
