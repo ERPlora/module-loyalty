@@ -13,7 +13,7 @@ from django.contrib import messages
 from django.db.models import Sum, Count, Q
 from django.core.paginator import Paginator
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext_lazy as _, gettext
 from decimal import Decimal
 
 from apps.accounts.decorators import login_required
@@ -356,9 +356,9 @@ def export_members_csv(request):
 
     writer = csv.writer(response)
     writer.writerow([
-        'Member Number', 'Card Number', 'Name', 'Email', 'Phone',
-        'Tier', 'Points Balance', 'Lifetime Points', 'Total Spent',
-        'Visit Count', 'Enrolled At', 'Last Activity', 'Status',
+        gettext('Member Number'), gettext('Card Number'), gettext('Name'), gettext('Email'), gettext('Phone'),
+        gettext('Tier'), gettext('Points Balance'), gettext('Lifetime Points'), gettext('Total Spent'),
+        gettext('Visit Count'), gettext('Enrolled At'), gettext('Last Activity'), gettext('Status'),
     ])
 
     members = LoyaltyMember.objects.filter(
@@ -379,7 +379,7 @@ def export_members_csv(request):
             member.visit_count,
             member.enrolled_at.strftime('%Y-%m-%d %H:%M') if member.enrolled_at else '',
             member.last_activity_at.strftime('%Y-%m-%d %H:%M') if member.last_activity_at else '',
-            'Active' if member.is_active else 'Inactive',
+            gettext('Active') if member.is_active else gettext('Inactive'),
         ])
 
     return response

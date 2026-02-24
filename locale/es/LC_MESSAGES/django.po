@@ -1,0 +1,996 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-24 23:58+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+
+msgid "Loyalty Program"
+msgstr "Programa de fidelización"
+
+msgid "Full name"
+msgstr "Nombre completo"
+
+msgid "Email address"
+msgstr "Dirección de correo electrónico"
+
+msgid "Phone number"
+msgstr "Número de teléfono"
+
+msgid "Physical or digital card number"
+msgstr "Número de tarjeta física o digital"
+
+msgid "e.g. Bronze, Silver, Gold"
+msgstr "ej. Bronce, Plata, Oro"
+
+msgid "Spanish name"
+msgstr "Nombre en español"
+
+msgid "Reward name"
+msgstr "Nombre de la recompensa"
+
+msgid "Product name (for display)"
+msgstr "Nombre del producto (para mostrar)"
+
+msgid "Unlimited"
+msgstr "Ilimitado"
+
+msgid "Search by name, number, email, phone..."
+msgstr "Buscar por nombre, número, email, teléfono..."
+
+msgid "All"
+msgstr "Todos"
+
+msgid "Active"
+msgstr "Activo"
+
+msgid "Inactive"
+msgstr "Inactivo"
+
+msgid "Program Name"
+msgstr "Nombre del programa"
+
+msgid "Program Enabled"
+msgstr "Programa habilitado"
+
+msgid "Points per Currency Unit"
+msgstr "Puntos por unidad monetaria"
+
+msgid "Points earned per currency unit spent"
+msgstr "Puntos ganados por unidad monetaria gastada"
+
+msgid "Point Value"
+msgstr "Valor del punto"
+
+msgid "Currency value of each point when redeemed"
+msgstr "Valor monetario de cada punto al canjear"
+
+msgid "Minimum Points for Redemption"
+msgstr "Puntos mínimos para canje"
+
+msgid "Points Expire"
+msgstr "Los puntos expiran"
+
+msgid "Expiry Period (Months)"
+msgstr "Período de expiración (meses)"
+
+msgid "Auto-Enroll Customers"
+msgstr "Inscripción automática de clientes"
+
+msgid "Automatically enroll customers on first purchase"
+msgstr "Inscribir automáticamente a los clientes en la primera compra"
+
+msgid "Welcome Points"
+msgstr "Puntos de bienvenida"
+
+msgid "Show Points on Receipt"
+msgstr "Mostrar puntos en el recibo"
+
+msgid "Show Available Rewards at Checkout"
+msgstr "Mostrar recompensas disponibles en el cobro"
+
+msgid "Loyalty Settings"
+msgstr "Ajustes de fidelización"
+
+msgid "Name"
+msgstr "Nombre"
+
+msgid "Name (Spanish)"
+msgstr "Nombre (español)"
+
+msgid "Description"
+msgstr "Descripción"
+
+msgid "Icon"
+msgstr "Icono"
+
+msgid "Color"
+msgstr "Color"
+
+msgid "Minimum Points"
+msgstr "Puntos mínimos"
+
+msgid "Points required to reach this tier"
+msgstr "Puntos necesarios para alcanzar este nivel"
+
+msgid "Minimum Spent"
+msgstr "Gasto mínimo"
+
+msgid "Total spent required to reach this tier"
+msgstr "Gasto total requerido para alcanzar este nivel"
+
+msgid "Points Multiplier"
+msgstr "Multiplicador de puntos"
+
+msgid "Multiplier for points earned (e.g., 1.5 = 50% more)"
+msgstr "Multiplicador de puntos ganados (ej., 1.5 = 50% más)"
+
+msgid "Discount %"
+msgstr "Descuento %"
+
+msgid "Free Shipping"
+msgstr "Envío gratis"
+
+msgid "Exclusive Offers"
+msgstr "Ofertas exclusivas"
+
+msgid "Order"
+msgstr "Orden"
+
+msgid "Default Tier"
+msgstr "Nivel predeterminado"
+
+msgid "Tier assigned to new members"
+msgstr "Nivel asignado a nuevos miembros"
+
+msgid "Loyalty Tier"
+msgstr "Nivel de fidelización"
+
+msgid "Loyalty Tiers"
+msgstr "Niveles de fidelización"
+
+msgid "Member Number"
+msgstr "Número de miembro"
+
+msgid "Card Number"
+msgstr "Número de tarjeta"
+
+msgid "Customer"
+msgstr "Cliente"
+
+msgid "Email"
+msgstr "Correo electrónico"
+
+msgid "Phone"
+msgstr "Teléfono"
+
+msgid "Tier"
+msgstr "Nivel"
+
+msgid "Points Balance"
+msgstr "Saldo de puntos"
+
+msgid "Lifetime Points Earned"
+msgstr "Puntos acumulados totales"
+
+msgid "Total Spent"
+msgstr "Total gastado"
+
+msgid "Visit Count"
+msgstr "Número de visitas"
+
+msgid "Enrolled At"
+msgstr "Fecha de alta"
+
+msgid "Last Activity"
+msgstr "Última actividad"
+
+msgid "Last Purchase"
+msgstr "Última compra"
+
+msgid "Notes"
+msgstr "Notas"
+
+msgid "Loyalty Member"
+msgstr "Miembro de fidelización"
+
+msgid "Loyalty Members"
+msgstr "Miembros de fidelización"
+
+msgid "Insufficient points balance"
+msgstr "Saldo de puntos insuficiente"
+
+#, python-format
+msgid "Minimum %(min)s points required"
+msgstr "Mínimo %(min)s puntos necesarios"
+
+msgid "Points Earned"
+msgstr "Puntos ganados"
+
+msgid "Points Redeemed"
+msgstr "Puntos canjeados"
+
+msgid "Bonus Points"
+msgstr "Puntos bonus"
+
+msgid "Manual Adjustment"
+msgstr "Ajuste manual"
+
+msgid "Points Expired"
+msgstr "Puntos expirados"
+
+msgid "Tier Change"
+msgstr "Cambio de nivel"
+
+msgid "Return Deduction"
+msgstr "Deducción por devolución"
+
+msgid "Member"
+msgstr "Miembro"
+
+msgid "Type"
+msgstr "Tipo"
+
+msgid "Points"
+msgstr "Puntos"
+
+msgid "Positive for earned, negative for redeemed/expired"
+msgstr "Positivo para ganados, negativo para canjeados/expirados"
+
+msgid "Balance After"
+msgstr "Saldo después"
+
+msgid "Sale"
+msgstr "Venta"
+
+msgid "Reward"
+msgstr "Recompensa"
+
+msgid "Processed By"
+msgstr "Procesado por"
+
+msgid "Expires At"
+msgstr "Expira el"
+
+msgid "Points Transaction"
+msgstr "Transacción de puntos"
+
+msgid "Points Transactions"
+msgstr "Transacciones de puntos"
+
+msgid "Discount Amount"
+msgstr "Importe de descuento"
+
+msgid "Free Product"
+msgstr "Producto gratis"
+
+msgid "Gift Card"
+msgstr "Tarjeta regalo"
+
+msgid "Image"
+msgstr "Imagen"
+
+msgid "Points Cost"
+msgstr "Coste en puntos"
+
+msgid "Points required to redeem"
+msgstr "Puntos necesarios para canjear"
+
+msgid "Reward Type"
+msgstr "Tipo de recompensa"
+
+msgid "Value"
+msgstr "Valor"
+
+msgid "Discount % or amount, or product value"
+msgstr "Descuento % o importe, o valor del producto"
+
+msgid "Product"
+msgstr "Producto"
+
+msgid "For free product rewards"
+msgstr "Para recompensas de productos gratis"
+
+msgid "Product Name"
+msgstr "Nombre del producto"
+
+msgid "Minimum Tier"
+msgstr "Nivel mínimo"
+
+msgid "Valid From"
+msgstr "Válido desde"
+
+msgid "Valid Until"
+msgstr "Válido hasta"
+
+msgid "Max Redemptions"
+msgstr "Máximo de canjes"
+
+msgid "Total times this can be redeemed (null = unlimited)"
+msgstr "Veces totales que se puede canjear (null = ilimitado)"
+
+msgid "Max Per Member"
+msgstr "Máximo por miembro"
+
+msgid "Times Redeemed"
+msgstr "Veces canjeado"
+
+msgid "Featured"
+msgstr "Destacado"
+
+msgid "Rewards"
+msgstr "Recompensas"
+
+msgid "Reward not available"
+msgstr "Recompensa no disponible"
+
+msgid "Insufficient points"
+msgstr "Puntos insuficientes"
+
+msgid "Tier requirement not met"
+msgstr "Requisito de nivel no cumplido"
+
+msgid "Maximum redemptions reached"
+msgstr "Máximo de canjes alcanzado"
+
+msgid "Pending"
+msgstr "Pendiente"
+
+msgid "Applied"
+msgstr "Aplicado"
+
+msgid "Expired"
+msgstr "Expirado"
+
+msgid "Cancelled"
+msgstr "Cancelado"
+
+msgid "Redemption Code"
+msgstr "Código de canje"
+
+msgid "Points Used"
+msgstr "Puntos utilizados"
+
+msgid "Status"
+msgstr "Estado"
+
+msgid "Reward Value"
+msgstr "Valor de la recompensa"
+
+msgid "Used At"
+msgstr "Usado el"
+
+msgid "Applied to Sale"
+msgstr "Aplicado a la venta"
+
+msgid "Reward Redemption"
+msgstr "Canje de recompensa"
+
+msgid "Reward Redemptions"
+msgstr "Canjes de recompensas"
+
+msgid "Loyalty"
+msgstr "Fidelización"
+
+msgid "Overview"
+msgstr "Vista general"
+
+msgid "Members"
+msgstr "Miembros"
+
+msgid "Tiers"
+msgstr "Niveles"
+
+msgid "History"
+msgstr "Historial"
+
+msgid "Settings"
+msgstr "Ajustes"
+
+msgid "Can view loyalty members"
+msgstr "Puede ver miembros de fidelización"
+
+msgid "Can add loyalty members"
+msgstr "Puede añadir miembros de fidelización"
+
+msgid "Can edit loyalty members"
+msgstr "Puede editar miembros de fidelización"
+
+msgid "Can delete loyalty members"
+msgstr "Puede eliminar miembros de fidelización"
+
+msgid "Can view loyalty tiers"
+msgstr "Puede ver niveles de fidelización"
+
+msgid "Can add loyalty tiers"
+msgstr "Puede añadir niveles de fidelización"
+
+msgid "Can edit loyalty tiers"
+msgstr "Puede editar niveles de fidelización"
+
+msgid "Can delete loyalty tiers"
+msgstr "Puede eliminar niveles de fidelización"
+
+msgid "Can view rewards"
+msgstr "Puede ver recompensas"
+
+msgid "Can add rewards"
+msgstr "Puede añadir recompensas"
+
+msgid "Can edit rewards"
+msgstr "Puede editar recompensas"
+
+msgid "Can delete rewards"
+msgstr "Puede eliminar recompensas"
+
+msgid "Can view points transactions"
+msgstr "Puede ver transacciones de puntos"
+
+msgid "Can redeem points"
+msgstr "Puede canjear puntos"
+
+msgid "Can manually adjust points"
+msgstr "Puede ajustar puntos manualmente"
+
+msgid "No Tier"
+msgstr "Sin nivel"
+
+msgid "Overview and statistics"
+msgstr "Vista general y estadísticas"
+
+msgid "Program Disabled"
+msgstr "Programa deshabilitado"
+
+msgid "Active Members"
+msgstr "Miembros activos"
+
+msgid "Points in Circulation"
+msgstr "Puntos en circulación"
+
+msgid "Active Rewards"
+msgstr "Recompensas activas"
+
+msgid "Top Members"
+msgstr "Mejores miembros"
+
+msgid "pts lifetime"
+msgstr "pts acumulados"
+
+msgid "No members yet"
+msgstr "Sin miembros aún"
+
+msgid "Tier Distribution"
+msgstr "Distribución de niveles"
+
+msgid "No tier data"
+msgstr "Sin datos de nivel"
+
+msgid "Recent Activity"
+msgstr "Actividad reciente"
+
+msgid "No activity yet"
+msgstr "Sin actividad aún"
+
+msgid "Quick Actions"
+msgstr "Acciones rápidas"
+
+msgid "Add Member"
+msgstr "Añadir miembro"
+
+msgid "Enroll a new customer in the loyalty program"
+msgstr "Inscribir un nuevo cliente en el programa de fidelización"
+
+msgid "Create Reward"
+msgstr "Crear recompensa"
+
+msgid "Add a new redeemable reward for members"
+msgstr "Añadir una nueva recompensa canjeable para miembros"
+
+msgid "Add Tier"
+msgstr "Añadir nivel"
+
+msgid "Configure a new membership level"
+msgstr "Configurar un nuevo nivel de membresía"
+
+msgid "Back to Member"
+msgstr "Volver al miembro"
+
+msgid "Add Bonus Points"
+msgstr "Añadir puntos bonus"
+
+msgid "Current Balance"
+msgstr "Saldo actual"
+
+msgid "points"
+msgstr "puntos"
+
+msgid "Tier bonus:"
+msgstr "Bonus del nivel:"
+
+msgid "multiplier active"
+msgstr "multiplicador activo"
+
+msgid "Points to Add"
+msgstr "Puntos a añadir"
+
+msgid "Quick Select"
+msgstr "Selección rápida"
+
+msgid "Points Amount"
+msgstr "Cantidad de puntos"
+
+msgid "Enter points amount"
+msgstr "Introduce cantidad de puntos"
+
+msgid "Reason / Description"
+msgstr "Motivo / Descripción"
+
+msgid "e.g., Birthday bonus, Special promotion, Referral reward"
+msgstr "ej., Bonus de cumpleaños, Promoción especial, Recompensa por referido"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Add Points"
+msgstr "Añadir puntos"
+
+msgid "Back to Members"
+msgstr "Volver a miembros"
+
+msgid "Redeem"
+msgstr "Canjear"
+
+msgid "Edit"
+msgstr "Editar"
+
+msgid "Lifetime Points"
+msgstr "Puntos acumulados"
+
+msgid "Visits"
+msgstr "Visitas"
+
+msgid "Contact Info"
+msgstr "Información de contacto"
+
+msgid "Enrolled"
+msgstr "Inscrito"
+
+msgid "Tier Benefits"
+msgstr "Beneficios del nivel"
+
+msgid "Discount"
+msgstr "Descuento"
+
+msgid "No tier assigned"
+msgstr "Sin nivel asignado"
+
+msgid "Available Rewards"
+msgstr "Recompensas disponibles"
+
+msgid "pts"
+msgstr "pts"
+
+msgid "Available"
+msgstr "Disponible"
+
+msgid "No rewards available"
+msgstr "No hay recompensas disponibles"
+
+msgid "Points History"
+msgstr "Historial de puntos"
+
+msgid "Bal"
+msgstr "Saldo"
+
+msgid "No transactions yet"
+msgstr "Sin transacciones aún"
+
+msgid "Danger Zone"
+msgstr "Zona peligrosa"
+
+msgid "Delete Member"
+msgstr "Eliminar miembro"
+
+msgid "This will remove the member from the loyalty program"
+msgstr "Esto eliminará al miembro del programa de fidelización"
+
+msgid "Are you sure you want to delete this member?"
+msgstr "¿Estás seguro de que quieres eliminar este miembro?"
+
+msgid "Delete"
+msgstr "Eliminar"
+
+msgid "Edit Member"
+msgstr "Editar miembro"
+
+msgid "Please correct the errors below"
+msgstr "Por favor, corrige los errores siguientes"
+
+msgid "Personal Information"
+msgstr "Información personal"
+
+msgid "Full Name"
+msgstr "Nombre completo"
+
+msgid "Membership"
+msgstr "Membresía"
+
+msgid "Inactive members cannot earn or redeem points"
+msgstr "Los miembros inactivos no pueden ganar ni canjear puntos"
+
+msgid "Create Member"
+msgstr "Crear miembro"
+
+msgid "Save Changes"
+msgstr "Guardar cambios"
+
+msgid "Redeem Reward"
+msgstr "Canjear recompensa"
+
+msgid "Available Points"
+msgstr "Puntos disponibles"
+
+msgid "off"
+msgstr "descuento"
+
+msgid "Free"
+msgstr "Gratis"
+
+msgid "Redeem this reward for"
+msgstr "Canjear esta recompensa por"
+
+msgid "points?"
+msgstr "puntos?"
+
+msgid "Create rewards in the Rewards section to allow redemptions"
+msgstr "Crea recompensas en la sección de Recompensas para permitir canjes"
+
+msgid "members enrolled"
+msgstr "miembros inscritos"
+
+msgid "Export"
+msgstr "Exportar"
+
+msgid "Name, email, phone, card..."
+msgstr "Nombre, email, teléfono, tarjeta..."
+
+msgid "All Tiers"
+msgstr "Todos los niveles"
+
+msgid "All Status"
+msgstr "Todos los estados"
+
+msgid "No members found"
+msgstr "No se encontraron miembros"
+
+msgid "Add your first member"
+msgstr "Añade tu primer miembro"
+
+msgid "Page"
+msgstr "Página"
+
+msgid "of"
+msgstr "de"
+
+msgid "Back to Rewards"
+msgstr "Volver a recompensas"
+
+msgid "Redeemed"
+msgstr "Canjeado"
+
+msgid "Yes"
+msgstr "Sí"
+
+msgid "No"
+msgstr "No"
+
+msgid "Details"
+msgstr "Detalles"
+
+msgid "Min Tier"
+msgstr "Nivel mínimo"
+
+msgid "Created"
+msgstr "Creado"
+
+msgid "Recent Redemptions"
+msgstr "Canjes recientes"
+
+msgid "No redemptions yet"
+msgstr "Sin canjes aún"
+
+msgid "Delete Reward"
+msgstr "Eliminar recompensa"
+
+msgid "This action cannot be undone"
+msgstr "Esta acción no se puede deshacer"
+
+msgid "Are you sure you want to delete this reward?"
+msgstr "¿Estás seguro de que quieres eliminar esta recompensa?"
+
+msgid "Add Reward"
+msgstr "Añadir recompensa"
+
+msgid "Edit Reward"
+msgstr "Editar recompensa"
+
+msgid "Basic Information"
+msgstr "Información básica"
+
+msgid "e.g. gift-outline, pricetag-outline, card-outline"
+msgstr "ej. gift-outline, pricetag-outline, card-outline"
+
+msgid "Current"
+msgstr "Actual"
+
+msgid "Reward Configuration"
+msgstr "Configuración de recompensa"
+
+#, python-format
+msgid "%% or amount depending on type"
+msgstr "%% o importe según el tipo"
+
+msgid "Minimum Tier Required"
+msgstr "Nivel mínimo requerido"
+
+msgid "Any Tier"
+msgstr "Cualquier nivel"
+
+msgid "Limits & Validity"
+msgstr "Límites y validez"
+
+msgid "Max Total Redemptions"
+msgstr "Máximo total de canjes"
+
+msgid "Leave empty for unlimited"
+msgstr "Dejar vacío para ilimitado"
+
+msgid "Display Order"
+msgstr "Orden de visualización"
+
+msgid "Options"
+msgstr "Opciones"
+
+msgid "Highlight this reward in listings"
+msgstr "Destacar esta recompensa en los listados"
+
+msgid "Inactive rewards cannot be redeemed"
+msgstr "Las recompensas inactivas no se pueden canjear"
+
+msgid "Manage redeemable rewards for members"
+msgstr "Gestionar recompensas canjeables para miembros"
+
+msgid "redeemed"
+msgstr "canjeado"
+
+msgid "No rewards found"
+msgstr "No se encontraron recompensas"
+
+msgid "Create rewards that members can redeem with their points"
+msgstr "Crear recompensas que los miembros puedan canjear con sus puntos"
+
+msgid "Create First Reward"
+msgstr "Crear primera recompensa"
+
+msgid "Configure your loyalty program"
+msgstr "Configurar tu programa de fidelización"
+
+msgid "Program Settings"
+msgstr "Ajustes del programa"
+
+msgid "Display name for your loyalty program"
+msgstr "Nombre visible de tu programa de fidelización"
+
+msgid "Enable or disable the loyalty program"
+msgstr "Habilitar o deshabilitar el programa de fidelización"
+
+msgid "Points Configuration"
+msgstr "Configuración de puntos"
+
+msgid "Min. Redemption"
+msgstr "Canje mínimo"
+
+msgid "Minimum points to redeem"
+msgstr "Puntos mínimos para canjear"
+
+msgid "Points Expiry"
+msgstr "Expiración de puntos"
+
+msgid "Enable expiration of points after a period"
+msgstr "Habilitar expiración de puntos después de un período"
+
+msgid "Enrollment"
+msgstr "Alta"
+
+msgid "Automatically enroll customers on their first purchase"
+msgstr "Inscribir automáticamente a los clientes en su primera compra"
+
+msgid "Bonus points given when a customer enrolls"
+msgstr "Puntos bonus otorgados cuando un cliente se inscribe"
+
+msgid "Display Options"
+msgstr "Opciones de visualización"
+
+msgid "Display earned points on sale receipts"
+msgstr "Mostrar puntos ganados en los recibos de venta"
+
+msgid "Show Available Rewards"
+msgstr "Mostrar recompensas disponibles"
+
+msgid "Show available rewards at checkout"
+msgstr "Mostrar recompensas disponibles en el cobro"
+
+msgid "Reset all settings to defaults?"
+msgstr "¿Restablecer todos los ajustes a los valores predeterminados?"
+
+msgid "Reset to Defaults"
+msgstr "Restablecer valores predeterminados"
+
+msgid "Back to Tiers"
+msgstr "Volver a niveles"
+
+msgid "Edit Tier"
+msgstr "Editar nivel"
+
+msgid "e.g. star-outline, diamond-outline, trophy-outline"
+msgstr "ej. star-outline, diamond-outline, trophy-outline"
+
+msgid "Requirements"
+msgstr "Requisitos"
+
+msgid "Lifetime points to reach this tier"
+msgstr "Puntos acumulados para alcanzar este nivel"
+
+msgid "Total amount spent to reach this tier"
+msgstr "Importe total gastado para alcanzar este nivel"
+
+msgid "Benefits"
+msgstr "Beneficios"
+
+#, python-format
+msgid "1.5 = 50%% more points earned"
+msgstr "1.5 = 50%% más puntos ganados"
+
+#, python-format
+msgid "Discount %%"
+msgstr "Descuento %%"
+
+msgid "Members get free shipping on all orders"
+msgstr "Los miembros obtienen envío gratis en todos los pedidos"
+
+msgid "Access to exclusive deals and promotions"
+msgstr "Acceso a ofertas y promociones exclusivas"
+
+msgid "Lower numbers appear first"
+msgstr "Los números más bajos aparecen primero"
+
+msgid "Default for New Members"
+msgstr "Predeterminado para nuevos miembros"
+
+msgid "Automatically assign this tier to new members"
+msgstr "Asignar automáticamente este nivel a nuevos miembros"
+
+msgid "Inactive tiers are hidden from selection"
+msgstr "Los niveles inactivos están ocultos en la selección"
+
+msgid "Create Tier"
+msgstr "Crear nivel"
+
+msgid "Configure membership levels and benefits"
+msgstr "Configurar niveles de membresía y beneficios"
+
+msgid "Default"
+msgstr "Por defecto"
+
+msgid "Min Points"
+msgstr "Puntos mínimos"
+
+msgid "Min Spent"
+msgstr "Gasto mínimo"
+
+msgid "Multiplier"
+msgstr "Multiplicador"
+
+msgid "Exclusive"
+msgstr "Exclusivo"
+
+msgid "Delete this tier?"
+msgstr "¿Eliminar este nivel?"
+
+msgid "No tiers configured"
+msgstr "Sin niveles configurados"
+
+msgid "Create tiers like Bronze, Silver, Gold to reward loyal customers"
+msgstr ""
+"Crear niveles como Bronce, Plata, Oro para recompensar clientes fieles"
+
+msgid "Create First Tier"
+msgstr "Crear primer nivel"
+
+msgid "All points transactions across members"
+msgstr "Todas las transacciones de puntos de los miembros"
+
+msgid "Member name or number..."
+msgstr "Nombre o número de miembro..."
+
+msgid "All Types"
+msgstr "Todos los tipos"
+
+msgid "No transactions found"
+msgstr "No se encontraron transacciones"
+
+msgid "Welcome bonus"
+msgstr "Bonus de bienvenida"
+
+msgid "Member created successfully"
+msgstr "Miembro creado correctamente"
+
+msgid "Member updated successfully"
+msgstr "Miembro actualizado correctamente"
+
+msgid "Member deleted"
+msgstr "Miembro eliminado"
+
+msgid "Points must be positive"
+msgstr "Los puntos deben ser positivos"
+
+msgid "Manual adjustment"
+msgstr "Ajuste manual"
+
+#, python-format
+msgid "%(points)s points added"
+msgstr "%(points)s puntos añadidos"
+
+msgid "Invalid points value"
+msgstr "Valor de puntos inválido"
+
+#, python-format
+msgid "Reward redeemed! Code: %(code)s"
+msgstr "¡Recompensa canjeada! Código: %(code)s"
+
+msgid "Tier created successfully"
+msgstr "Nivel creado correctamente"
+
+msgid "Tier updated successfully"
+msgstr "Nivel actualizado correctamente"
+
+#, python-format
+msgid "Cannot delete tier with %(count)s active members"
+msgstr "No se puede eliminar el nivel con %(count)s miembros activos"
+
+msgid "Tier deleted"
+msgstr "Nivel eliminado"
+
+msgid "Reward created successfully"
+msgstr "Recompensa creada correctamente"
+
+msgid "Reward updated successfully"
+msgstr "Recompensa actualizada correctamente"
+
+msgid "Reward deleted"
+msgstr "Recompensa eliminada"
+
+msgid "Settings saved"
+msgstr "Ajustes guardados"
+
+msgid "Invalid JSON"
+msgstr "JSON inválido"
+
+msgid "Setting saved"
+msgstr "Ajuste guardado"
+
+msgid "Settings reset to defaults"
+msgstr "Ajustes restablecidos a valores predeterminados"

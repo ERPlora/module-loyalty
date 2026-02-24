@@ -1,10 +1,12 @@
 {% load djicons i18n djicons djicons %}
 
 <div class="p-4">
+{% trans "Loyalty Program" as loyalty_program_text %}
+{% trans "No Tier" as no_tier_text %}
     <div class="mb-6">
         <div class="flex justify-between items-center">
             <div>
-                <h1 class="text-3xl font-bold">{{ settings.program_name|default:_("Loyalty Program") }}</h1>
+                <h1 class="text-3xl font-bold">{{ settings.program_name|default:loyalty_program_text }}</h1>
                 <p class="text-sm mt-2 text-muted">{% trans "Overview and statistics" %}</p>
             </div>
             {% if not settings.program_enabled %}
@@ -105,7 +107,7 @@
                             <div class="w-4 h-4 rounded-full" style="background-color: {{ stat.tier__color|default:'#9ca3af' }};"></div>
                         </div>
                         <div class="list-item-content">
-                            <div class="list-item-label">{{ stat.tier__name|default:_("No Tier") }}</div>
+                            <div class="list-item-label">{{ stat.tier__name|default:no_tier_text }}</div>
                         </div>
                         <div class="list-item-end"><span class="badge badge-sm">{{ stat.count }}</span></div>
                     </div>
