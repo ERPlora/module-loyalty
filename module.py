@@ -98,6 +98,7 @@ PERMISSIONS = [
     ("view_transaction", _("Can view points transactions")),
     ("redeem_points", _("Can redeem points")),
     ("adjust_points", _("Can manually adjust points")),
+    ("manage_settings", _("Can manage loyalty settings")),
 ]
 
 # Role Permissions - Default permissions for each system role in this module

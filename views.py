@@ -16,7 +16,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _, gettext
 from decimal import Decimal
 
-from apps.accounts.decorators import login_required
+from apps.accounts.decorators import login_required, permission_required
 from apps.core.htmx import htmx_view
 from apps.modules_runtime.navigation import with_module_nav
 
@@ -626,6 +626,7 @@ def transactions_list(request):
 # =============================================================================
 
 @login_required
+@permission_required('loyalty.manage_settings')
 @with_module_nav('loyalty', 'settings')
 @htmx_view('loyalty/pages/settings.html', 'loyalty/partials/settings_form.html')
 def settings_view(request):
@@ -635,6 +636,7 @@ def settings_view(request):
 
 
 @login_required
+@permission_required('loyalty.manage_settings')
 @require_POST
 def settings_save(request):
     hub = _hub_id(request)
@@ -664,6 +666,7 @@ def settings_save(request):
 
 
 @login_required
+@permission_required('loyalty.manage_settings')
 @require_POST
 def settings_toggle(request):
     hub = _hub_id(request)
