@@ -1,14 +1,7 @@
 {% load djicons i18n djicons djicons %}
+<div data-back-url="{% url 'loyalty:member_detail' pk=member.pk %}" hidden></div>
 
 <div class="p-4">
-    <button class="btn btn-ghost btn-sm mb-4"
-        hx-get="{% url 'loyalty:member_detail' pk=member.pk %}"
-        hx-target="#main-content-area"
-        hx-push-url="true">
-        {% icon "arrow-back-outline" css_class="mr-1" %}
-        {% trans "Back to Member" %}
-    </button>
-
     <div class="mb-6">
         <div class="flex justify-between items-center">
             <div>
