@@ -5,13 +5,13 @@
     if (!window._loyaltyToastListenerAdded) {
         window._loyaltyToastListenerAdded = true;
         document.body.addEventListener('showToast', function(e) {
-            const detail = e.detail || {};
+            const detail = e.detail || {},
             const message = detail.message || 'Done';
             const type = detail.color || 'success';
             if (window.UX && window.UX.toast) {
-                window.UX.toast(message, { type: type });
+                window.UX.toast(message, { type: type },
             }
-        });
+        },
     }
 })();
 </script>
