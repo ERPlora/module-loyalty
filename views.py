@@ -18,6 +18,7 @@ from decimal import Decimal
 
 from apps.accounts.decorators import login_required, permission_required
 from apps.core.htmx import htmx_view
+from apps.core.media_helpers import handle_image_field
 from apps.modules_runtime.navigation import with_module_nav
 
 from .models import (
@@ -507,6 +508,8 @@ def reward_create(request):
             reward = form.save(commit=False)
             reward.hub_id = hub
             reward.save()
+            if handle_image_field(request, reward, 'image'):
+                reward.save(update_fields=['image'])
             messages.success(request, _('Reward created successfully'))
             return redirect('loyalty:rewards_list')
         return {'form': form, 'tiers': tiers, 'is_create': True, 'reward_types': Reward.RewardType.choices}
@@ -552,7 +555,9 @@ def reward_edit(request, pk):
     if request.method == 'POST':
         form = RewardForm(request.POST, request.FILES, instance=reward)
         if form.is_valid():
-            form.save()
+            reward = form.save()
+            if handle_image_field(request, reward, 'image'):
+                reward.save(update_fields=['image'])
             messages.success(request, _('Reward updated successfully'))
             return redirect('loyalty:reward_detail', pk=reward.pk)
         return {'form': form, 'reward': reward, 'tiers': tiers, 'is_create': False, 'reward_types': Reward.RewardType.choices}

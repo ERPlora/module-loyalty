@@ -53,10 +53,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">{% trans "Image" %}</label>
-                        <input type="file" name="image" accept="image/*" class="input w-full">
-                        {% if reward.image %}
-                        <p class="text-xs text-muted mt-1">{% trans "Current" %}: {{ reward.image.name }}</p>
-                        {% endif %}
+                        {% include "core/components/media_picker.html" with field_name="image" current_url=reward.image.url folder="loyalty" %}
                     </div>
                 </div>
             </div>
