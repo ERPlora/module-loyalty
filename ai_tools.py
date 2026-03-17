@@ -151,3 +151,94 @@ class ListRewards(AssistantTool):
                 for r in rewards
             ]
         }
+
+
+@register_tool
+class UpdateLoyaltyReward(AssistantTool):
+    name = "update_loyalty_reward"
+    description = "Update an existing loyalty reward."
+    module_id = "loyalty"
+    required_permission = "loyalty.change_loyaltymember"
+    requires_confirmation = True
+    parameters = {
+        "type": "object",
+        "properties": {
+            "reward_id": {"type": "string", "description": "Reward ID"},
+            "name": {"type": "string", "description": "Reward name"},
+            "points_cost": {"type": "integer", "description": "Points required to redeem"},
+            "reward_type": {"type": "string", "description": "discount_percent, discount_amount, free_product, free_shipping, gift_card"},
+            "value": {"type": "string", "description": "Discount % or amount"},
+            "is_active": {"type": "boolean", "description": "Whether the reward is active"},
+            "is_featured": {"type": "boolean", "description": "Whether to feature the reward"},
+            "max_redemptions": {"type": "integer", "description": "Max total redemptions (null = unlimited)"},
+            "max_per_member": {"type": "integer", "description": "Max redemptions per member"},
+        },
+        "required": ["reward_id"],
+        "additionalProperties": False,
+    }
+
+    def execute(self, args, request):
+        from decimal import Decimal
+        from loyalty.models import Reward
+        try:
+            r = Reward.objects.get(id=args['reward_id'])
+        except Reward.DoesNotExist:
+            return {"error": "Reward not found"}
+        fields = []
+        if 'name' in args:
+            r.name = args['name']
+            fields.append('name')
+        if 'points_cost' in args:
+            r.points_cost = args['points_cost']
+            fields.append('points_cost')
+        if 'reward_type' in args:
+            r.reward_type = args['reward_type']
+            fields.append('reward_type')
+        if 'value' in args:
+            r.value = Decimal(args['value'])
+            fields.append('value')
+        if 'is_active' in args:
+            r.is_active = args['is_active']
+            fields.append('is_active')
+        if 'is_featured' in args:
+            r.is_featured = args['is_featured']
+            fields.append('is_featured')
+        if 'max_redemptions' in args:
+            r.max_redemptions = args['max_redemptions']
+            fields.append('max_redemptions')
+        if 'max_per_member' in args:
+            r.max_per_member = args['max_per_member']
+            fields.append('max_per_member')
+        if fields:
+            fields.append('updated_at')
+            r.save(update_fields=fields)
+        return {"id": str(r.id), "name": r.name, "updated": True}
+
+
+@register_tool
+class DeleteLoyaltyReward(AssistantTool):
+    name = "delete_loyalty_reward"
+    description = "Delete (soft-delete) a loyalty reward."
+    module_id = "loyalty"
+    required_permission = "loyalty.change_loyaltymember"
+    requires_confirmation = True
+    parameters = {
+        "type": "object",
+        "properties": {
+            "reward_id": {"type": "string", "description": "Reward ID"},
+        },
+        "required": ["reward_id"],
+        "additionalProperties": False,
+    }
+
+    def execute(self, args, request):
+        from loyalty.models import Reward
+        try:
+            r = Reward.objects.get(id=args['reward_id'])
+        except Reward.DoesNotExist:
+            return {"error": "Reward not found"}
+        name = r.name
+        r.is_deleted = True
+        r.is_active = False
+        r.save(update_fields=['is_deleted', 'is_active', 'updated_at'])
+        return {"deleted": True, "name": name}
