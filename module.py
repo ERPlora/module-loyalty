@@ -9,8 +9,8 @@ from django.utils.translation import gettext_lazy as _
 # Module Identification
 MODULE_ID = "loyalty"
 MODULE_NAME = _("Loyalty")
-MODULE_ICON = "heart-outline"
-MODULE_VERSION = "1.0.0"
+MODULE_ICON = 'material:loyalty'
+MODULE_VERSION = '1.0.1'
 MODULE_CATEGORY = "crm"
 
 # Target Industries (business verticals this module is designed for)
