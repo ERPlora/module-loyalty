@@ -10,7 +10,9 @@ from django.utils.translation import gettext_lazy as _
 MODULE_ID = "loyalty"
 MODULE_NAME = _("Loyalty")
 MODULE_ICON = 'material:loyalty'
-MODULE_VERSION = '1.0.1'
+MODULE_VERSION = '1.0.2'
+MODULE_DESCRIPTION = _('Customer loyalty programs, points, and rewards')
+MODULE_AUTHOR = 'ERPlora'
 MODULE_CATEGORY = "crm"
 
 # Target Industries (business verticals this module is designed for)
